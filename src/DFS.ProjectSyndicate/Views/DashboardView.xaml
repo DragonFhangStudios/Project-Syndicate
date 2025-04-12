@@ -1,7 +1,7 @@
-﻿<UserControl x:Class="ProjectSyndicate.Views.DashboardView"
+﻿<UserControl x:Class="DFS.ProjectSyndicate.Views.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:ProjectSyndicate.ViewModels"
+             xmlns:vm="clr-namespace:DFS.ProjectSyndicate.ViewModels"
              x:Name="DashboardRoot">
     <UserControl.DataContext>
         <vm:DashboardViewModel />
@@ -28,6 +28,8 @@
                 <Run Text="Endurance: "/>
                 <Run Text="{Binding Player.Endurance}"/>
             </TextBlock>
+            <TextBlock Text="{Binding CurrentJobTitle}" FontWeight="Bold" Margin="0 10 0 0"/>
+            <TextBlock Text="{Binding JobEarnings}" />
         </StackPanel>
     </Grid>
 </UserControl>

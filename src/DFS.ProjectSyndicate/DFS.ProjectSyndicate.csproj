@@ -10,10 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\DFS.JobSystem\DFS.JobSystem.csproj" />
     <ProjectReference Include="D:\DragonFhangStudios\DFS-Gaming-Hub\DFS.Core\DFS.Core.csproj" />
   </ItemGroup>
 

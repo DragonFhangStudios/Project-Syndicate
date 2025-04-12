@@ -1,9 +1,9 @@
-﻿using ProjectSyndicate.Models;
-using ProjectSyndicate.ViewModels;
+﻿using DFS.ProjectSyndicate.Models;
+using DFS.ProjectSyndicate.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace ProjectSyndicate.Views
+namespace DFS.ProjectSyndicate.Views
 {
 	public partial class CrimeView : UserControl
 	{

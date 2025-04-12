@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="DFS.ProjectSyndicate.Views.JobsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:DFS.ProjectSyndicate.ViewModels">
+    <UserControl.DataContext>
+        <vm:JobsViewModel/>
+    </UserControl.DataContext>
+
+    <StackPanel Margin="20">
+        <TextBlock Text="💼 Active Job" FontSize="22" FontWeight="Bold" Margin="0 0 0 20"/>
+
+        <StackPanel>
+            <TextBlock Text="{Binding JobTitle}" FontWeight="Bold" FontSize="16"/>
+            <TextBlock Text="{Binding JobDescription}" FontSize="12" Margin="0 5 0 10"/>
+
+            <ItemsControl ItemsSource="{Binding JobTasks}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="✔️ {Binding}" Margin="5"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="{Binding TotalPayout}" FontWeight="Bold" Margin="0 20 0 0"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

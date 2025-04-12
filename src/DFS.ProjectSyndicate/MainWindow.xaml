@@ -11,8 +11,9 @@
 
         <!-- Sidebar Navigation -->
         <StackPanel Grid.Column="0" Background="#222" Margin="10">
-            <Button Content="Dashboard" Click="Dashboard_Click" Margin="0 5"/>
-            <Button Content="Crimes" Click="Crimes_Click" Margin="0 5"/>
+            <Button Content="Dashboard" Click="Dashboard_Click" Margin="5"/>
+            <Button Content="Jobs" Click="JobsTab_Click" Margin="5"/>
+            <Button Content="🔒 Crimes (Coming Soon)" IsEnabled="False" ToolTip="Criminal underworld not yet accessible" Opacity="0.5" Margin="5"/>
         </StackPanel>
 
         <!-- Main Content Area -->

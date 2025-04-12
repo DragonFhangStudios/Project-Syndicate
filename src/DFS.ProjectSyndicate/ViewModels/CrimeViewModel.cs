@@ -1,10 +1,10 @@
-﻿using ProjectSyndicate.Models;
+﻿using DFS.ProjectSyndicate.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace ProjectSyndicate.ViewModels
+namespace DFS.ProjectSyndicate.ViewModels
 {
 	public class CrimeViewModel : INotifyPropertyChanged
 	{

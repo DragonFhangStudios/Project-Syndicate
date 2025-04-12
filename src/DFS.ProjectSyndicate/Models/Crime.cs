@@ -1,4 +1,4 @@
-﻿namespace ProjectSyndicate.Models
+﻿namespace DFS.ProjectSyndicate.Models
 {
 	public class Crime
 	{
