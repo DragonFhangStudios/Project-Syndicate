@@ -1,0 +1,30 @@
+﻿<UserControl x:Class="ProjectSyndicate.Views.CrimeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ProjectSyndicate.ViewModels"
+             x:Name="CrimeRoot">
+    <UserControl.DataContext>
+        <vm:CrimeViewModel />
+    </UserControl.DataContext>
+
+    <Grid Margin="10">
+        <StackPanel>
+            <TextBlock Text="Crime Center" FontSize="20" FontWeight="Bold" Margin="0 0 0 10"/>
+            <ItemsControl ItemsSource="{Binding Crimes}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="Gray" BorderThickness="1" Padding="5" Margin="0 5">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Description}"/>
+                                <Button Content="Attempt" Click="AttemptCrime_Click" Tag="{Binding}" Margin="0 5 0 0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="{Binding LastResult}" FontSize="14" FontWeight="Bold" Margin="0 10 0 0" Foreground="DarkGreen"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
