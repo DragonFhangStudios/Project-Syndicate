@@ -1,4 +1,5 @@
-﻿using DFS.ProjectSyndicate.Views;
+﻿using DFS.ProjectSyndicate.Models;
+using DFS.ProjectSyndicate.Views;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -9,25 +10,46 @@ namespace DFS.ProjectSyndicate
 		public MainWindow()
 		{
 			InitializeComponent();
-			LoadDashboard();
+			LoadLogin();
 		}
-
-		private void LoadDashboard()
+		public void LoadLogin()
+		{
+			MainContent.Content = new LoginView();
+		}
+		public void LoadDashboard()
 		{
 			MainContent.Content = new DashboardView();
 		}
 
 		private void Dashboard_Click(object sender, RoutedEventArgs e)
 		{
+			if (!GameSession.IsLoggedIn)
+			{
+				MessageBox.Show("You must log in first.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+				return;
+			}
+
 			LoadDashboard();
 		}
 		private void Crimes_Click(object sender, RoutedEventArgs e)
 		{
+			if (!GameSession.IsLoggedIn)
+			{
+				MessageBox.Show("You must log in first.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+				return;
+			}
+
 			MainContent.Content = new CrimeView();
 		}
 		private void JobsTab_Click(object sender, RoutedEventArgs e)
 		{
-			MainContent.Content = new JobsView(); // ← now loading the real deal!
+			if (!GameSession.IsLoggedIn)
+			{
+				MessageBox.Show("You must log in first.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+				return;
+			}
+
+			MainContent.Content = new JobsView();
 		}
 	}
 }

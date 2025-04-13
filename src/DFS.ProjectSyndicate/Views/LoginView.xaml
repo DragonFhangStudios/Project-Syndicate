@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="DFS.ProjectSyndicate.Views.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:DFS.ProjectSyndicate.ViewModels">
+
+    <UserControl.DataContext>
+        <vm:LoginViewModel />
+    </UserControl.DataContext>
+
+    <StackPanel Margin="30">
+        <TextBlock Text="🔐 Login to Syndicate" FontSize="22" FontWeight="Bold" Margin="0 0 0 20"/>
+
+        <ItemsControl ItemsSource="{Binding Players}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Content="{Binding Name}" 
+                            Click="LoginButton_Click"
+                            Tag="{Binding}"
+                            Height="40" Margin="0 5"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock Text="Enter Passcode:" FontWeight="Bold" Margin="0 15 0 5"/>
+        <PasswordBox Name="PasswordInput" Width="200" Height="25"/>
+    </StackPanel>
+</UserControl>

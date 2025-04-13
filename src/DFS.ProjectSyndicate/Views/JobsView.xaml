@@ -1,7 +1,12 @@
 ﻿<UserControl x:Class="DFS.ProjectSyndicate.Views.JobsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:DFS.ProjectSyndicate.ViewModels">
+             xmlns:vm="clr-namespace:DFS.ProjectSyndicate.ViewModels"
+             xmlns:converters="clr-namespace:DFS.ProjectSyndicate.Converters">
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+    </UserControl.Resources>
     <UserControl.DataContext>
         <vm:JobsViewModel/>
     </UserControl.DataContext>
@@ -10,9 +15,12 @@
         <TextBlock Text="💼 Active Job" FontSize="22" FontWeight="Bold" Margin="0 0 0 20"/>
 
         <StackPanel>
+            <StackPanel x:Name="JobPanel" Visibility="{Binding HasJob, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock Text="{Binding JobTitle}" FontWeight="Bold" FontSize="16"/>
             <TextBlock Text="{Binding JobDescription}" FontSize="12" Margin="0 5 0 10"/>
+            </StackPanel>
 
+            <TextBlock Text="No active job assigned." Visibility="{Binding HasJob, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
             <ItemsControl ItemsSource="{Binding JobTasks}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -22,6 +30,7 @@
             </ItemsControl>
 
             <TextBlock Text="{Binding TotalPayout}" FontWeight="Bold" Margin="0 20 0 0"/>
+            <Button Content="✔️ Complete Next Task" Command="{Binding CompleteTaskCommand}" Margin="0 20 0 0" Height="35" Width="200" HorizontalAlignment="Left"/>
         </StackPanel>
     </StackPanel>
 </UserControl>

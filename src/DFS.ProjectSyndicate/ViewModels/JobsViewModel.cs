@@ -4,6 +4,8 @@ using DFS.ProjectSyndicate.Models;
 using DFS.JobSystem.Data;
 using DFS.JobSystem.Core;
 using DFS.ProjectSyndicate.ViewModels;
+using System.Windows.Input;
+using DFS.ProjectSyndicate.Services;
 
 namespace DFS.ProjectSyndicate.ViewModels
 {
@@ -13,9 +15,14 @@ namespace DFS.ProjectSyndicate.ViewModels
 		public string JobDescription { get; set; } = "";
 		public ObservableCollection<string> JobTasks { get; set; } = new();
 		public string TotalPayout { get; set; } = "";
+		public bool HasJob => !string.IsNullOrWhiteSpace(_player.JobData.AssignedJobId);
+
 
 		private readonly SyndicatePlayer _player;
 		private readonly JobManager _jobManager;
+		public ICommand CompleteTaskCommand { get; }
+
+		private int _currentTaskIndex = 0;
 
 		public JobsViewModel()
 		{
@@ -24,6 +31,8 @@ namespace DFS.ProjectSyndicate.ViewModels
 			JobLoader.RegisterAllJobs(_jobManager);
 
 			LoadActiveJob();
+			
+			CompleteTaskCommand = new RelayCommand(CompleteCurrentJobTask);
 		}
 
 		private void LoadActiveJob()
@@ -48,6 +57,33 @@ namespace DFS.ProjectSyndicate.ViewModels
 			}
 
 			TotalPayout = $"Potential Earnings: ${total}";
+		}
+		private void CompleteCurrentJobTask()
+		{
+			if (string.IsNullOrWhiteSpace(_player.JobData.AssignedJobId))
+				return;
+
+			var job = _jobManager.GetJob(_player.JobData.AssignedJobId);
+			if (job == null || _currentTaskIndex >= job.Tasks.Count)
+				return;
+
+			var task = job.Tasks[_currentTaskIndex];
+
+			_player.JobData.CompletedTasks.Add(task.Name);
+			_player.JobData.TotalEarned += task.Reward;
+			_currentTaskIndex++;
+
+			JobTasks.Clear();
+			foreach (var t in job.Tasks)
+			{
+				bool done = _player.JobData.CompletedTasks.Contains(t.Name);
+				JobTasks.Add($"{(done ? "✔️" : "🕓")} {t.Name} - ${t.Reward}");
+			}
+
+			TotalPayout = $"Earnings: ${_player.JobData.TotalEarned}";
+
+			// Optional: save state
+			JsonSaveManager.Save(_player);
 		}
 	}
 }

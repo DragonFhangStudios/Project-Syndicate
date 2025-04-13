@@ -4,29 +4,33 @@
              xmlns:vm="clr-namespace:DFS.ProjectSyndicate.ViewModels"
              x:Name="DashboardRoot">
     <UserControl.DataContext>
-        <vm:DashboardViewModel />
+        <vm:DashboardViewModel/>
     </UserControl.DataContext>
 
     <Grid Margin="10">
         <StackPanel>
             <TextBlock Text="Welcome to Project Syndicate" FontSize="24" FontWeight="Bold" />        
             <TextBlock Text="{Binding Player.Name}" FontSize="18"/>
-            <TextBlock Text="Level: " FontWeight="Bold"/>
-            <TextBlock Text="{Binding Player.Level}" />
-            <TextBlock Text="Cash: $" FontWeight="Bold"/>
-            <TextBlock Text="{Binding Player.Cash}" />
+            <TextBlock>
+    <Run Text="Level: " />
+    <Run Text="{Binding Player.Level}" />
+            </TextBlock>
+            <TextBlock>
+    <Run Text="Cash: $" />
+    <Run Text="{Binding Player.Cash}" />
+            </TextBlock>
             <TextBlock Text="Stats:" FontWeight="Bold" Margin="0 10 0 0"/>
             <TextBlock>
-                <Run Text="Strength: "/>
-                <Run Text="{Binding Player.Strength}"/>
+    <Run Text="Strength: " />
+    <Run Text="{Binding Player.Strength}" />
             </TextBlock>
             <TextBlock>
-                <Run Text="Intellect: "/>
-                <Run Text="{Binding Player.Intellect}"/>
+    <Run Text="Intellect: " />
+    <Run Text="{Binding Player.Intellect}" />
             </TextBlock>
             <TextBlock>
-                <Run Text="Endurance: "/>
-                <Run Text="{Binding Player.Endurance}"/>
+    <Run Text="Endurance: " />
+    <Run Text="{Binding Player.Endurance}" />
             </TextBlock>
             <TextBlock Text="{Binding CurrentJobTitle}" FontWeight="Bold" Margin="0 10 0 0"/>
             <TextBlock Text="{Binding JobEarnings}" />
