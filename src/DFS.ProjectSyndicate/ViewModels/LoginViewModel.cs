@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using DFS.ProjectSyndicate.Models;
 using DFS.ProjectSyndicate;
+using DFS.ProjectSyndicate.Commands;
 
 namespace DFS.ProjectSyndicate.ViewModels
 {

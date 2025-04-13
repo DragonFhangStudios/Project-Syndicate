@@ -15,12 +15,12 @@ namespace DFS.ProjectSyndicate.ViewModels
 		public DashboardViewModel()
 		{			
 			_jobManager = new JobManager();
-			JobLoader.RegisterAllJobs(_jobManager);
+			JobLoader.LoadAndRegisterJobs(_jobManager, "Data/SimpleJobs.json");
 		}
 
-		public string CurrentJobTitle =>
-			string.IsNullOrWhiteSpace(Player.JobData.AssignedJobId)
-				? "Rank: Godfather"
+		public string RankDisplay => "Rank: Godfather";
+		public string CurrentJobTitle => string.IsNullOrWhiteSpace(Player.JobData.AssignedJobId)
+				? "None Assigned"
 				: $"Working: {_jobManager.GetJob(Player.JobData.AssignedJobId)?.Title ?? "Unknown"}";
 
 		public string JobEarnings =>

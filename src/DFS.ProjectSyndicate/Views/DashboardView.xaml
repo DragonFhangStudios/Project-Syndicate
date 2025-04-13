@@ -32,8 +32,8 @@
     <Run Text="Endurance: " />
     <Run Text="{Binding Player.Endurance}" />
             </TextBlock>
-            <TextBlock Text="{Binding CurrentJobTitle}" FontWeight="Bold" Margin="0 10 0 0"/>
-            <TextBlock Text="{Binding JobEarnings}" />
+            <TextBlock Text="{Binding RankDisplay}" FontWeight="Bold" Margin="0 10 0 0"/>
+            <TextBlock Text="{Binding CurrentJobTitle}" />
         </StackPanel>
     </Grid>
 </UserControl>

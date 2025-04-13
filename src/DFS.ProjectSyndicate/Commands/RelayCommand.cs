@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace DFS.ProjectSyndicate.ViewModels
+namespace DFS.ProjectSyndicate.Commands
 {
 	public class RelayCommand : ICommand
 	{

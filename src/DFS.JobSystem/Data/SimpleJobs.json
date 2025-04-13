@@ -1,0 +1,14 @@
+[
+  {
+    "Id": "trash_cleanup",
+    "Title": "Street Trash Cleanup",
+    "Description": "Clean up garbage from the downtown area.",
+    "Payout": 5,
+    "Tasks": [
+      "Go to warehouse",
+      "Grab supplies",
+      "Clean the streets",
+      "Empty trash at warehouse"
+    ]
+  }
+]

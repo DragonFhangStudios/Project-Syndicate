@@ -1,89 +1,119 @@
 ﻿using System.Collections.ObjectModel;
-using DFS.JobSystem.Managers;
-using DFS.ProjectSyndicate.Models;
-using DFS.JobSystem.Data;
-using DFS.JobSystem.Core;
-using DFS.ProjectSyndicate.ViewModels;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using DFS.ProjectSyndicate.Services;
+using DFS.JobSystem.Core;
+using DFS.JobSystem.Data;
+using DFS.JobSystem.Managers;
+using DFS.ProjectSyndicate.Commands;
+using DFS.ProjectSyndicate.Models;
 
 namespace DFS.ProjectSyndicate.ViewModels
 {
-	public class JobsViewModel
+	public class JobsViewModel : INotifyPropertyChanged
 	{
-		public string JobTitle { get; set; } = "No Job Assigned";
-		public string JobDescription { get; set; } = "";
-		public ObservableCollection<string> JobTasks { get; set; } = new();
-		public string TotalPayout { get; set; } = "";
-		public bool HasJob => !string.IsNullOrWhiteSpace(_player.JobData.AssignedJobId);
-
-
 		private readonly SyndicatePlayer _player;
 		private readonly JobManager _jobManager;
-		public ICommand CompleteTaskCommand { get; }
 
-		private int _currentTaskIndex = 0;
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public ICommand CompleteTaskCommand { get; }
 
 		public JobsViewModel()
 		{
 			_player = GameSession.CurrentPlayer;
 			_jobManager = new JobManager();
-			JobLoader.RegisterAllJobs(_jobManager);
+			JobLoader.LoadAndRegisterJobs(_jobManager, "Data/SimpleJobs.json");
 
-			LoadActiveJob();
-			
-			CompleteTaskCommand = new RelayCommand(CompleteCurrentJobTask);
+			CompleteTaskCommand = new RelayCommand(CompleteCurrentTask);
+			UpdateJobInfo();
 		}
 
-		private void LoadActiveJob()
+		private string _jobTitle = "No active job assigned.";
+		public string JobTitle
+		{
+			get => _jobTitle;
+			set => SetField(ref _jobTitle, value);
+		}
+
+		private string _jobDescription = string.Empty;
+		public string JobDescription
+		{
+			get => _jobDescription;
+			set => SetField(ref _jobDescription, value);
+		}
+
+		private ObservableCollection<string> _taskList = new();
+		public ObservableCollection<string> TaskList
+		{
+			get => _taskList;
+			set => SetField(ref _taskList, value);
+		}
+
+		private int _currentTaskIndex;
+		public int CurrentTaskIndex
+		{
+			get => _currentTaskIndex;
+			set => SetField(ref _currentTaskIndex, value);
+		}
+
+		private bool _jobCompleted;
+		public bool JobCompleted
+		{
+			get => _jobCompleted;
+			set => SetField(ref _jobCompleted, value);
+		}
+
+		private void UpdateJobInfo()
 		{
 			if (string.IsNullOrWhiteSpace(_player.JobData.AssignedJobId))
+			{
+				JobTitle = "No active job assigned.";
+				JobDescription = string.Empty;
+				TaskList.Clear();
+				CurrentTaskIndex = 0;
 				return;
+			}
 
 			var job = _jobManager.GetJob(_player.JobData.AssignedJobId);
 			if (job == null)
+			{
+				JobTitle = "Job not found.";
 				return;
+			}
 
 			JobTitle = job.Title;
 			JobDescription = job.Description;
-
-			int total = 0;
-
-			foreach (var task in job.Tasks)
-			{
-				string taskText = $"{task.Name} - ${task.Reward}";
-				JobTasks.Add(taskText);
-				total += task.Reward;
-			}
-
-			TotalPayout = $"Potential Earnings: ${total}";
+			TaskList = new ObservableCollection<string>(job.Tasks);
+			CurrentTaskIndex = _player.JobData.CurrentTaskIndex;
 		}
-		private void CompleteCurrentJobTask()
+
+		private void CompleteCurrentTask()
 		{
-			if (string.IsNullOrWhiteSpace(_player.JobData.AssignedJobId))
-				return;
-
 			var job = _jobManager.GetJob(_player.JobData.AssignedJobId);
-			if (job == null || _currentTaskIndex >= job.Tasks.Count)
-				return;
+			if (job == null) return;
 
-			var task = job.Tasks[_currentTaskIndex];
+			if (_player.JobData.CurrentTaskIndex >= job.Tasks.Count)
+				return; // All tasks already completed
 
-			_player.JobData.CompletedTasks.Add(task.Name);
-			_player.JobData.TotalEarned += task.Reward;
-			_currentTaskIndex++;
+			_player.JobData.CurrentTaskIndex++;
 
-			JobTasks.Clear();
-			foreach (var t in job.Tasks)
+			if (_player.JobData.CurrentTaskIndex >= job.Tasks.Count)
 			{
-				bool done = _player.JobData.CompletedTasks.Contains(t.Name);
-				JobTasks.Add($"{(done ? "✔️" : "🕓")} {t.Name} - ${t.Reward}");
+				_player.JobData.TotalEarned += job.Payout;
+				JobCompleted = true;
+				_player.JobData.AssignedJobId = string.Empty;
+				_player.JobData.CurrentTaskIndex = 0;
 			}
 
-			TotalPayout = $"Earnings: ${_player.JobData.TotalEarned}";
+			UpdateJobInfo();
+		}
 
-			// Optional: save state
-			JsonSaveManager.Save(_player);
+		private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+		{
+			if (Equals(field, value)) return;
+			field = value;
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 	}
 }

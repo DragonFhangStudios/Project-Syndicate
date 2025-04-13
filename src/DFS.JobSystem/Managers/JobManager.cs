@@ -7,7 +7,7 @@ namespace DFS.JobSystem.Managers
 	{
 		private readonly Dictionary<string, Job> _jobs = new();
 
-		public void RegisterJob(Job job)
+		public void Register(Job job)
 		{
 			if (!_jobs.ContainsKey(job.Id))
 				_jobs.Add(job.Id, job);
@@ -24,7 +24,8 @@ namespace DFS.JobSystem.Managers
 			return _jobs.Values;
 		}
 
-		public void ClearJobs()
+
+		public void Clear()
 		{
 			_jobs.Clear();
 		}

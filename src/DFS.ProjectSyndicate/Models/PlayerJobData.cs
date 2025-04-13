@@ -2,10 +2,13 @@
 {
 	public class PlayerJobData
 	{
-		public string? AssignedJobId { get; set; }
-		public List<string> CompletedTasks { get; set; } = new();
-		public int TotalEarned { get; set; } = 0;
+		// The unique Job ID assigned to this player
+		public string AssignedJobId { get; set; } = string.Empty;
 
-		// Optional: Add timestamp or job history later
+		// Tracks which task they're on in the active job
+		public int CurrentTaskIndex { get; set; } = 0;
+
+		// Total money earned from jobs
+		public int TotalEarned { get; set; } = 0;
 	}
 }

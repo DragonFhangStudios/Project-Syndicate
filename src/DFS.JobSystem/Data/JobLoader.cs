@@ -1,15 +1,26 @@
 ﻿using DFS.JobSystem.Core;
 using DFS.JobSystem.Managers;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 
 namespace DFS.JobSystem.Data
 {
 	public static class JobLoader
 	{
-		public static void RegisterAllJobs(JobManager manager)
+		public static void LoadAndRegisterJobs(JobManager manager, string filePath)
 		{
-			manager.RegisterJob(DeliveryJob.Create());
+			if (!File.Exists(filePath))
+				return;
 
-			// Future jobs: manager.RegisterJob(FirefighterJob.Create());
+			var json = File.ReadAllText(filePath);
+			var jobs = JsonSerializer.Deserialize<List<Job>>(json);
+			if (jobs == null) return;
+
+			foreach (var job in jobs)
+			{
+				manager.Register(job);
+			}
 		}
 	}
 }
