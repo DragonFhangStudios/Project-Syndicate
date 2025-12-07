@@ -7,33 +7,220 @@
         <vm:DashboardViewModel/>
     </UserControl.DataContext>
 
-    <Grid Margin="10">
-        <StackPanel>
-            <TextBlock Text="Welcome to Project Syndicate" FontSize="24" FontWeight="Bold" />        
-            <TextBlock Text="{Binding Player.Name}" FontSize="18"/>
-            <TextBlock>
-    <Run Text="Level: " />
-    <Run Text="{Binding Player.Level}" />
-            </TextBlock>
-            <TextBlock>
-    <Run Text="Cash: $" />
-    <Run Text="{Binding Player.Cash}" />
-            </TextBlock>
-            <TextBlock Text="Stats:" FontWeight="Bold" Margin="0 10 0 0"/>
-            <TextBlock>
-    <Run Text="Strength: " />
-    <Run Text="{Binding Player.Strength}" />
-            </TextBlock>
-            <TextBlock>
-    <Run Text="Intellect: " />
-    <Run Text="{Binding Player.Intellect}" />
-            </TextBlock>
-            <TextBlock>
-    <Run Text="Endurance: " />
-    <Run Text="{Binding Player.Endurance}" />
-            </TextBlock>
-            <TextBlock Text="{Binding RankDisplay}" FontWeight="Bold" Margin="0 10 0 0"/>
-            <TextBlock Text="{Binding CurrentJobTitle}" />
-        </StackPanel>
-    </Grid>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- Header -->
+                    <TextBlock Text="Welcome to Project Syndicate" 
+                       FontSize="28" 
+                       FontWeight="Bold" 
+                       Margin="0 0 0 15"
+                       Foreground="#2C3E50"/>
+
+                    <!-- Player Info Card -->
+                    <Border Background="#ECF0F1" 
+                    BorderBrush="#BDC3C7" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="15"
+                    Margin="0 0 0 15">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Player.Name}" 
+                               FontSize="20" 
+                               FontWeight="SemiBold"
+                               Foreground="#34495E"/>
+
+                            <Grid Margin="0 10 0 0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding LevelDisplay}" FontSize="14" Margin="0 2"/>
+                                    <TextBlock Text="{Binding XPDisplay}" FontSize="14" Margin="0 2"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                    <TextBlock FontSize="14" Margin="0 2">
+                                <Run Text="Cash: $" Foreground="#27AE60"/>
+                                <Run Text="{Binding Player.Cash, StringFormat=N0}" FontWeight="Bold" Foreground="#27AE60"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tier/Rank Card -->
+                    <Border Background="#3498DB" 
+                    BorderThickness="0" 
+                    CornerRadius="8" 
+                    Padding="15"
+                    Margin="0 0 0 15">
+                        <StackPanel>
+                            <TextBlock Text="Current Rank" 
+                               FontSize="12" 
+                               Foreground="#ECF0F1"
+                               FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding RankDisplay}" 
+                               FontSize="24" 
+                               FontWeight="Bold"
+                               Foreground="White"
+                               Margin="0 5 0 0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Promotion Section -->
+                    <Border Background="#F8F9FA" 
+                    BorderBrush="#DEE2E6" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="15"
+                    Margin="0 0 0 15">
+                        <StackPanel>
+                            <TextBlock Text="📈 Career Advancement" 
+                               FontSize="16" 
+                               FontWeight="Bold"
+                               Foreground="#495057"
+                               Margin="0 0 0 10"/>
+
+                            <TextBlock Text="{Binding PromotionInfo}" 
+                               TextWrapping="Wrap"
+                               FontSize="13"
+                               Foreground="#6C757D"
+                               Margin="0 0 0 15"/>
+
+                            <Button Content="🎯 Apply for Promotion" 
+                            Command="{Binding PromoteCommand}"
+                            IsEnabled="{Binding CanPromote}"
+                            Background="#28A745"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            FontSize="14"
+                            Padding="15 10"
+                            BorderThickness="0"
+                            Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="#28A745"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="5" 
+                                                    Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Background" Value="#ADB5BD"/>
+                                                <Setter Property="Foreground" Value="#6C757D"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#218838"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Stats Section -->
+                    <Border Background="#FFF" 
+                    BorderBrush="#DEE2E6" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="15"
+                    Margin="0 0 0 15">
+                        <StackPanel>
+                            <TextBlock Text="💪 Character Stats" 
+                               FontSize="16" 
+                               FontWeight="Bold"
+                               Foreground="#495057"
+                               Margin="0 0 0 10"/>
+
+                            <TextBlock Margin="0 5">
+                        <Run Text="Strength: " Foreground="#6C757D"/>
+                        <Run Text="{Binding Player.Strength}" FontWeight="Bold" Foreground="#E74C3C"/>
+                            </TextBlock>
+                            <TextBlock Margin="0 5">
+                        <Run Text="Intellect: " Foreground="#6C757D"/>
+                        <Run Text="{Binding Player.Intellect}" FontWeight="Bold" Foreground="#3498DB"/>
+                            </TextBlock>
+                            <TextBlock Margin="0 5">
+                        <Run Text="Endurance: " Foreground="#6C757D"/>
+                        <Run Text="{Binding Player.Endurance}" FontWeight="Bold" Foreground="#27AE60"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Current Job Section -->
+                    <Border Background="#FFF" 
+                    BorderBrush="#DEE2E6" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="15"
+                    Margin="0 0 0 15">
+                        <StackPanel>
+                            <TextBlock Text="💼 Employment Status" 
+                               FontSize="16" 
+                               FontWeight="Bold"
+                               Foreground="#495057"
+                               Margin="0 0 0 10"/>
+
+                            <TextBlock Text="{Binding CurrentJobTitle}" 
+                               FontSize="14"
+                               Foreground="#6C757D"
+                               Margin="0 5"/>
+                            <TextBlock Text="{Binding JobEarnings}" 
+                               FontSize="14"
+                               Foreground="#28A745"
+                               FontWeight="SemiBold"
+                               Margin="0 5"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- DEBUG SECTION (Remove in production) -->
+                    <Border Background="#FFF3CD" 
+                    BorderBrush="#FFC107" 
+                    BorderThickness="2" 
+                    CornerRadius="8" 
+                    Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="🔧 DEBUG CONTROLS (Testing Only)" 
+                               FontSize="14" 
+                               FontWeight="Bold"
+                               Foreground="#856404"
+                               Margin="0 0 0 10"/>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <Button Content="+200 XP" 
+                                Command="{Binding DebugAddXPCommand}"
+                                Margin="0 0 10 0"
+                                Padding="15 8"
+                                Background="#9B59B6"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                BorderThickness="0"
+                                Cursor="Hand"/>
+                                <Button Content="+$1000" 
+                                Command="{Binding DebugAddCashCommand}"
+                                Padding="15 8"
+                                Background="#27AE60"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                BorderThickness="0"
+                                Cursor="Hand"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </ScrollViewer>
 </UserControl>
