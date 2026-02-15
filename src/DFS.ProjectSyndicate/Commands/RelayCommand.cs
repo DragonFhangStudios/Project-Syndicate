@@ -25,12 +25,12 @@ namespace DFS.ProjectSyndicate.Commands
 		}
 	}
 
-	public class LoginPlayer<T> : ICommand
+	public class RelayCommand<T> : ICommand
 	{
 		private readonly Action<T> _execute;
 		private readonly Predicate<T>? _canExecute;
 
-		public LoginPlayer(Action<T> execute, Predicate<T>? canExecute = null)
+		public RelayCommand(Action<T> execute, Predicate<T>? canExecute = null)
 		{
 			_execute = execute;
 			_canExecute = canExecute;
