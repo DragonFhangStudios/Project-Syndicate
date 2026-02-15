@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DFS.ProjectSyndicate.Views.CrimeView"
+<UserControl x:Class="DFS.ProjectSyndicate.Views.CrimeView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:DFS.ProjectSyndicate.ViewModels"
@@ -9,22 +9,23 @@
 
     <Grid Margin="10">
         <StackPanel>
-            <TextBlock Text="Crime Center" FontSize="20" FontWeight="Bold" Margin="0 0 0 10"/>
+            <TextBlock Text="Crime Center" Style="{StaticResource HeaderTextStyle}"/>
+
             <ItemsControl ItemsSource="{Binding Crimes}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderBrush="Gray" BorderThickness="1" Padding="5" Margin="0 5">
+                        <Border Style="{StaticResource CardStyle}">
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding Description}"/>
-                                <Button Content="Attempt" Click="AttemptCrime_Click" Tag="{Binding}" Margin="0 5 0 0"/>
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding Description}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                <Button Content="Attempt" Click="AttemptCrime_Click" Tag="{Binding}" HorizontalAlignment="Left" Width="100"/>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <TextBlock Text="{Binding LastResult}" FontSize="14" FontWeight="Bold" Margin="0 10 0 0" Foreground="DarkGreen"/>
+            <TextBlock Text="{Binding LastResult}" FontSize="14" FontWeight="Bold" Margin="0 10 0 0" Foreground="{StaticResource SuccessBrush}"/>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -1,4 +1,5 @@
-﻿using DFS.ProjectSyndicate.Models;
+using DFS.ProjectSyndicate.Models;
+using DFS.ProjectSyndicate.Services;
 using DFS.ProjectSyndicate.Views;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,9 +8,12 @@ namespace DFS.ProjectSyndicate
 {
 	public partial class MainWindow : Window
 	{
+        private readonly IDialogService _dialogService;
+
 		public MainWindow()
 		{
 			InitializeComponent();
+            _dialogService = new DialogService();
 			LoadLogin();
 		}
 		public void LoadLogin()
@@ -25,7 +29,7 @@ namespace DFS.ProjectSyndicate
 		{
 			if (!GameSession.IsLoggedIn)
 			{
-				MessageBox.Show("You must log in first.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _dialogService.ShowMessage("You must log in first.", "Access Denied");
 				return;
 			}
 
@@ -35,7 +39,7 @@ namespace DFS.ProjectSyndicate
 		{
 			if (!GameSession.IsLoggedIn)
 			{
-				MessageBox.Show("You must log in first.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _dialogService.ShowMessage("You must log in first.", "Access Denied");
 				return;
 			}
 
@@ -45,7 +49,7 @@ namespace DFS.ProjectSyndicate
 		{
 			if (!GameSession.IsLoggedIn)
 			{
-				MessageBox.Show("You must log in first.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _dialogService.ShowMessage("You must log in first.", "Access Denied");
 				return;
 			}
 
