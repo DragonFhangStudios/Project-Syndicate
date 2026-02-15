@@ -14,7 +14,7 @@ namespace DFS.ProjectSyndicate.ViewModels
 		public LoginViewModel()
 		{
 			Players = new ObservableCollection<SyndicatePlayer>(PlayerDatabase.AllPlayers);
-			LoginCommand = new LoginPlayer<SyndicatePlayer>(Login);
+			LoginCommand = new RelayCommand<SyndicatePlayer>(Login);
 		}
 
 		private void Login(SyndicatePlayer player)
