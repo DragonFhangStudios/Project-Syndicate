@@ -116,26 +116,6 @@
 
             </Grid>
 
-            <!-- DEBUG SECTION (Remove in production) -->
-            <Border Style="{StaticResource CardStyle}" BorderBrush="{StaticResource WarningBrush}" Background="Transparent" Margin="0,15,0,0">
-                <StackPanel>
-                    <TextBlock Text="🔧 DEBUG CONTROLS (Testing Only)"
-                               FontSize="14" 
-                               FontWeight="Bold"
-                               Foreground="{StaticResource WarningBrush}"
-                               Margin="0 0 0 10"/>
-
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                        <Button Content="+200 XP"
-                                Command="{Binding DebugAddXPCommand}"
-                                Margin="0 0 10 0"
-                                Padding="15 8"/>
-                        <Button Content="+$1000"
-                                Command="{Binding DebugAddCashCommand}"
-                                Padding="15 8"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
