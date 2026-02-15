@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DFS.JobSystem\DFS.JobSystem.csproj" />
-    <ProjectReference Include="D:\DragonFhangStudios\DFS-Gaming-Hub\DFS.Core\DFS.Core.csproj" />
+    <ProjectReference Include="..\DFS.Core\DFS.Core.csproj" />
   </ItemGroup>
 
 </Project>

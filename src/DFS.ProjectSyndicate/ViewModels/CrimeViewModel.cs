@@ -1,32 +1,27 @@
-﻿using DFS.ProjectSyndicate.Models;
+using DFS.ProjectSyndicate.Core;
+using DFS.ProjectSyndicate.Models;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace DFS.ProjectSyndicate.ViewModels
 {
-	public class CrimeViewModel : INotifyPropertyChanged
+	public class CrimeViewModel : ObservableObject
 	{
 		public ObservableCollection<Crime> Crimes { get; set; }
-		public SyndicatePlayer Player { get; set; }
+		public SyndicatePlayer Player => GameSession.CurrentPlayer;
 
 		private string _lastResult = string.Empty;
 		public string LastResult
 		{
 			get => _lastResult;
-			set
-			{
-				_lastResult = value;
-				OnPropertyChanged();
-			}
+			set => SetProperty(ref _lastResult, value);
 		}
 
 		private Random rng = new();
 
 		public CrimeViewModel()
 		{
-			Player = new SyndicatePlayer("PlayerOne");
+			// Player is now retrieved from GameSession
 
 			Crimes = new ObservableCollection<Crime>
 			{
@@ -38,6 +33,8 @@ namespace DFS.ProjectSyndicate.ViewModels
 
 		public void AttemptCrime(Crime crime)
 		{
+            if (Player == null) return;
+
 			if (rng.NextDouble() <= crime.SuccessChance)
 			{
 				Player.Cash += crime.Reward;
@@ -47,13 +44,6 @@ namespace DFS.ProjectSyndicate.ViewModels
 			{
 				LastResult = "❌ You failed and ran away empty-handed.";
 			}
-		}
-
-		public event PropertyChangedEventHandler? PropertyChanged;
-
-		protected void OnPropertyChanged([CallerMemberName] string? name = null)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 		}
 	}
 }

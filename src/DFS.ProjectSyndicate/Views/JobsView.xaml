@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DFS.ProjectSyndicate.Views.JobsView"
+<UserControl x:Class="DFS.ProjectSyndicate.Views.JobsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:DFS.ProjectSyndicate.ViewModels">
@@ -7,16 +7,27 @@
         <vm:JobSelectorViewModel />
     </UserControl.DataContext>
 
-    <StackPanel Margin="20">
-        <TextBlock Text="📝 Select a Job" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,50,0,0">
+        <Border Style="{StaticResource CardStyle}" Width="500">
+            <StackPanel Margin="20">
+                <TextBlock Text="📝 Available Contracts" Style="{StaticResource HeaderTextStyle}" HorizontalAlignment="Center"/>
 
-        <ComboBox ItemsSource="{Binding AvailableJobs}"
-                  SelectedItem="{Binding SelectedJob, Mode=TwoWay}"
-                  DisplayMemberPath="Title"
-                  Width="300" Height="30" Margin="0,0,0,10"/>
+                <TextBlock Text="Select a Job" Style="{StaticResource SubHeaderTextStyle}" Margin="0,0,0,5"/>
 
-        <Button Content="Accept Job"
-                Command="{Binding AssignJobCommand}"
-                Width="150" Height="30" HorizontalAlignment="Center"/>
-    </StackPanel>
+                <ComboBox ItemsSource="{Binding AvailableJobs}"
+                          SelectedItem="{Binding SelectedJob, Mode=TwoWay}"
+                          DisplayMemberPath="Title"
+                          Height="40"
+                          VerticalContentAlignment="Center"
+                          Padding="10,0"
+                          Margin="0,0,0,20"/>
+
+                <Button Content="Accept Contract"
+                        Command="{Binding AssignJobCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Height="45"
+                        HorizontalAlignment="Stretch"/>
+            </StackPanel>
+        </Border>
+    </Grid>
 </UserControl>
