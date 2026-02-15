@@ -28,8 +28,6 @@ namespace DFS.ProjectSyndicate.ViewModels
             }
 
             PromoteCommand = new RelayCommand(AttemptPromotion);
-            DebugAddXPCommand = new RelayCommand(() => DebugAddXP(200));
-            DebugAddCashCommand = new RelayCommand(() => DebugAddCash(1000));
 		}
 
         public void Cleanup()
@@ -69,8 +67,6 @@ namespace DFS.ProjectSyndicate.ViewModels
 
 		// Commands
 		public ICommand PromoteCommand { get; }
-		public ICommand DebugAddXPCommand { get; }
-		public ICommand DebugAddCashCommand { get; }
 
 		private void AttemptPromotion()
 		{
@@ -84,15 +80,5 @@ namespace DFS.ProjectSyndicate.ViewModels
 			}
 		}
 
-		// DEBUG METHODS (Remove in production)
-		private void DebugAddXP(int amount)
-		{
-			Player.AddXP(amount);
-		}
-
-		private void DebugAddCash(int amount)
-		{
-			Player.Cash += amount;
-		}
 	}
 }
