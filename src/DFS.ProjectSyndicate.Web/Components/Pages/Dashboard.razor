@@ -1,0 +1,47 @@
+@page "/play/{CharacterId}"
+@implements IDisposable
+@inject PlayerState State
+
+<PageTitle>Dashboard · Project Syndicate</PageTitle>
+
+@switch (State.Status)
+{
+    case null:
+        <p>Loading…</p>
+        break;
+    case PlayerLoadStatus.UnknownCharacter:
+        <h1>Character not found</h1>
+        <p><a href="">Back to character selection</a></p>
+        break;
+    case PlayerLoadStatus.Corrupt:
+        <h1>Save file unreadable</h1>
+        <p>This character's save could not be read. It has been left untouched so it can be inspected or restored.</p>
+        <p><a href="">Back to character selection</a></p>
+        break;
+    default:
+        var player = State.Player!;
+        <h1>@player.Name</h1>
+        <dl>
+            <dt>Level</dt><dd>@player.Level</dd>
+            <dt>XP</dt><dd>@player.XP</dd>
+            <dt>Rank</dt><dd>Tier @player.Tier: @ProgressionManager.GetTierName(player.Tier)</dd>
+            <dt>Cash</dt><dd>$@player.Cash.ToString("N0")</dd>
+            <dt>Strength</dt><dd>@player.Strength</dd>
+            <dt>Intellect</dt><dd>@player.Intellect</dd>
+            <dt>Endurance</dt><dd>@player.Endurance</dd>
+            <dt>Job</dt><dd>@(string.IsNullOrEmpty(player.JobData.AssignedJobId) ? "None assigned" : player.JobData.AssignedJobId)</dd>
+        </dl>
+        break;
+}
+
+@code {
+    [Parameter] public string CharacterId { get; set; } = string.Empty;
+
+    protected override void OnInitialized() => State.Changed += OnStateChanged;
+
+    protected override async Task OnParametersSetAsync() => await State.LoadAsync(CharacterId);
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.Changed -= OnStateChanged;
+}

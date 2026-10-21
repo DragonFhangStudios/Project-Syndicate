@@ -4,6 +4,7 @@ namespace DFS.ProjectSyndicate.Models
 {
 	public class SyndicatePlayer : ObservableObject
 	{
+		private string _id = string.Empty;
 		private string _name;
 		private int _level;
 		private int _xp;
@@ -13,6 +14,13 @@ namespace DFS.ProjectSyndicate.Models
 		private float _intellect;
 		private float _endurance;
 		private PlayerJobData _jobData = new();
+
+		// Stable character identifier, used as the save-file key (e.g. "sonny-perelli").
+		public string Id
+		{
+			get => _id;
+			set => SetProperty(ref _id, value);
+		}
 
 		public string Name
 		{

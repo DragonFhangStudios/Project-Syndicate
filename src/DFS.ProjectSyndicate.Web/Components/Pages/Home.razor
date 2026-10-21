@@ -1,0 +1,46 @@
+﻿@page "/"
+@inject GameService Game
+
+<PageTitle>Choose a character · Project Syndicate</PageTitle>
+
+<h1>Choose your character</h1>
+<p>Demo characters for local development. No sign-in is required and nothing here is account security.</p>
+
+@if (_characters is null)
+{
+    <p>Loading characters…</p>
+}
+else
+{
+    <ul>
+        @foreach (var (profile, result) in _characters)
+        {
+            <li>
+                <strong>@profile.Name</strong>
+                @if (result.Status == PlayerLoadStatus.Loaded && result.Player is { } player)
+                {
+                    <span> · Level @player.Level · @ProgressionManager.GetTierName(player.Tier) · $@player.Cash.ToString("N0")</span>
+                    <a href="@($"play/{profile.Id}")">Play</a>
+                }
+                else
+                {
+                    <span> · Save file unreadable</span>
+                }
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<(DemoCharacter Profile, PlayerLoadResult Result)>? _characters;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var list = new List<(DemoCharacter, PlayerLoadResult)>();
+        foreach (var profile in DemoCharacters.All)
+        {
+            list.Add((profile, await Game.PreviewPlayerAsync(profile.Id)));
+        }
+        _characters = list;
+    }
+}

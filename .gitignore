@@ -9,3 +9,6 @@
 
 # Runtime save data written by JsonSaveManager
 player_save.json
+
+# Web app local saves (Syndicate:SaveDirectory)
+App_Data/
