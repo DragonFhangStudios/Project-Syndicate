@@ -1,0 +1,33 @@
+@implements IDisposable
+@inject NavigationManager Nav
+
+<a href="@Href" class="nav-item nav-@Variant @(IsActive ? "active" : null)" aria-current="@(IsActive ? "page" : null)">
+    <Icon Name="@IconName" CssClass="nav-icon" />
+    <span class="nav-label">@Label</span>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string IconName { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    // "side" (desktop sidebar) or "tab" (mobile tab bar).
+    [Parameter] public string Variant { get; set; } = "side";
+    // Match only this exact path, not its sub-pages.
+    [Parameter] public bool Exact { get; set; }
+
+    private bool IsActive
+    {
+        get
+        {
+            string path = Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].TrimEnd('/');
+            return Exact ? path == Href : path == Href || path.StartsWith(Href + "/", StringComparison.Ordinal);
+        }
+    }
+
+    protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) =>
+        InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

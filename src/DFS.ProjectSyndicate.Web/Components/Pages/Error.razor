@@ -1,28 +1,22 @@
 ﻿@page "/Error"
 @using System.Diagnostics
 
-<PageTitle>Error</PageTitle>
+<PageTitle>Error · Project Syndicate</PageTitle>
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="page">
+    <header class="page-header-text">
+        <p class="eyebrow eyebrow-crimson">Error</p>
+        <h1>Something went wrong</h1>
+        <p class="lede">An error occurred while processing your request.</p>
+    </header>
 
-@if (ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@RequestId</code>
-    </p>
-}
+    @if (ShowRequestId)
+    {
+        <p class="muted">Request ID: <code>@RequestId</code></p>
+    }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+    <p><a class="btn btn-ghost" href="">Back to character selection</a></p>
+</div>
 
 @code{
     [CascadingParameter]

@@ -1,0 +1,38 @@
+@* Celebration shown after a reward. Pages announce the same text through their own live region. *@
+<div class="reward @(LevelsGained > 0 ? "reward-levelup" : null)">
+    <div class="reward-seal" aria-hidden="true">
+        <Icon Name="star" />
+    </div>
+    <div class="reward-body">
+        <p class="eyebrow">@Eyebrow</p>
+        <p class="reward-title">@Title</p>
+        <ul class="reward-items">
+            @if (Cash > 0)
+            {
+                <li class="reward-cash">+@Format.Money(Cash)</li>
+            }
+            @if (Xp > 0)
+            {
+                <li class="reward-xp">+@Format.Number(Xp) XP</li>
+            }
+            @if (LevelsGained > 0)
+            {
+                <li class="reward-level">Level up · now level @NewLevel</li>
+            }
+        </ul>
+    </div>
+    @if (OnDismiss.HasDelegate)
+    {
+        <button type="button" class="btn btn-ghost reward-dismiss" @onclick="OnDismiss">Dismiss</button>
+    }
+</div>
+
+@code {
+    [Parameter] public string Eyebrow { get; set; } = "Reward";
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public int Cash { get; set; }
+    [Parameter] public int Xp { get; set; }
+    [Parameter] public int LevelsGained { get; set; }
+    [Parameter] public int NewLevel { get; set; }
+    [Parameter] public EventCallback OnDismiss { get; set; }
+}

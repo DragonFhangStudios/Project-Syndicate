@@ -1,0 +1,46 @@
+@page "/play/{CharacterId}/jobs"
+@inject IJobCatalog Jobs
+
+<PageTitle>Job board · Project Syndicate</PageTitle>
+
+<PlayerGate CharacterId="@CharacterId" Context="player">
+    @{
+        var activeJob = Jobs.Find(player.JobData.AssignedJobId);
+    }
+    <div class="page">
+        <header class="page-header">
+            <div class="page-header-text">
+                <p class="eyebrow eyebrow-crimson">Civilian career</p>
+                <h1>Job board</h1>
+                <p class="lede">Honest work, honest pay. Take a contract, see every task through, and collect your earnings.</p>
+            </div>
+        </header>
+
+        @if (activeJob is not null)
+        {
+            <Panel Eyebrow="Active contract" Title="@activeJob.Title" Variant="accent">
+                <p class="muted">@activeJob.Description</p>
+                <ProgressMeter Label="Progress" Value="player.JobData.CurrentTaskIndex" Max="activeJob.Tasks.Count"
+                               ValueText="@($"{player.JobData.CurrentTaskIndex} of {activeJob.Tasks.Count} tasks")" />
+                <TaskChecklist Tasks="activeJob.Tasks" CompletedCount="player.JobData.CurrentTaskIndex" />
+            </Panel>
+        }
+
+        <section class="stack" aria-labelledby="available-heading">
+            <div class="section-title">
+                <h2 id="available-heading">Available contracts</h2>
+                <span class="muted">@Jobs.All.Count listed</span>
+            </div>
+            <div class="grid grid-2">
+                @foreach (var job in Jobs.All)
+                {
+                    <JobCard Job="job" />
+                }
+            </div>
+        </section>
+    </div>
+</PlayerGate>
+
+@code {
+    [Parameter] public string CharacterId { get; set; } = string.Empty;
+}

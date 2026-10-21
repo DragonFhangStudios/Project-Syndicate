@@ -1,0 +1,19 @@
+.select-hero {
+    position: relative;
+    padding: var(--ps-space-5) 0 var(--ps-space-2);
+}
+
+.select-hero::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.5rem;
+    width: 96px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--ps-crimson-bright), transparent);
+}
+
+.select-hero h1 {
+    font-size: clamp(2rem, 1.3rem + 3vw, 3.2rem);
+    letter-spacing: 0.005em;
+}

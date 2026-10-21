@@ -1,0 +1,26 @@
+@using System.Globalization
+@* Accessible progress bar. Tone: "crimson" (default), "gold" or "success". *@
+<div class="meter meter-@(Tone ?? "crimson")">
+    <div class="meter-label">
+        <span>@Label</span>
+        <span class="meter-figures tabular">@Figures</span>
+    </div>
+    <div class="meter-track" role="progressbar" aria-label="@Label"
+         aria-valuemin="0" aria-valuemax="@Max.ToString(CultureInfo.InvariantCulture)"
+         aria-valuenow="@Clamped.ToString(CultureInfo.InvariantCulture)" aria-valuetext="@Figures">
+        <div class="meter-fill" style="width: @Percent.ToString("0.##", CultureInfo.InvariantCulture)%"></div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public string? Tone { get; set; }
+    // Text shown beside the label and read by screen readers, e.g. "40 / 100 XP".
+    [Parameter] public string? ValueText { get; set; }
+
+    private double Clamped => Math.Clamp(Value, 0, Max);
+    private double Percent => Max <= 0 ? 100 : Clamped / Max * 100;
+    private string Figures => ValueText ?? string.Create(CultureInfo.InvariantCulture, $"{Clamped:N0} / {Max:N0}");
+}

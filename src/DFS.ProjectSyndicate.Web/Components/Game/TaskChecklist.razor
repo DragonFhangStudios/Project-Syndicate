@@ -1,0 +1,26 @@
+@* Ordered task list for a job: completed, current and upcoming steps. *@
+<ol class="tasks" aria-label="Job tasks">
+    @for (int i = 0; i < Tasks.Count; i++)
+    {
+        var state = i < CompletedCount ? "done" : i == CompletedCount ? "current" : "todo";
+        <li class="task task-@state" aria-current="@(state == "current" ? "step" : null)">
+            <span class="task-marker" aria-hidden="true">
+                @if (state == "done")
+                {
+                    <Icon Name="check" />
+                }
+                else
+                {
+                    @(i + 1)
+                }
+            </span>
+            <span class="task-text">@Tasks[i]</span>
+            <span class="visually-hidden">@(state switch { "done" => ", completed", "current" => ", current task", _ => ", not started" })</span>
+        </li>
+    }
+</ol>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<string> Tasks { get; set; } = [];
+    [Parameter] public int CompletedCount { get; set; }
+}

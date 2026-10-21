@@ -17,9 +17,17 @@ namespace DFS.ProjectSyndicate.Managers
 			{ 5, new TierRequirement { TierLevel = 5, TierName = "Business Tycoon", XPNeeded = 1500, CashNeeded = 50000, PromotionCost = 10000 } }
 		};
 
+		public const int MaxTier = 5;
+
 		public static string GetTierName(int tier)
 		{
 			return TierRequirements.ContainsKey(tier) ? TierRequirements[tier].TierName : "Unknown";
+		}
+
+		// Requirements for the player's next tier, or null at the maximum tier.
+		public static TierRequirement? GetNextTierRequirement(SyndicatePlayer player)
+		{
+			return TierRequirements.TryGetValue(player.Tier + 1, out var req) ? req : null;
 		}
 
 		public static bool CanPromote(SyndicatePlayer player)

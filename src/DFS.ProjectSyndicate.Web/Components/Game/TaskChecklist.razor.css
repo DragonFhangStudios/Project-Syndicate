@@ -1,0 +1,83 @@
+.tasks {
+    display: grid;
+    gap: var(--ps-space-2);
+    padding: 0;
+    list-style: none;
+    counter-reset: none;
+}
+
+.task {
+    display: flex;
+    align-items: center;
+    gap: var(--ps-space-3);
+    padding: 0.65rem var(--ps-space-3);
+    border: 1px solid var(--ps-border);
+    border-radius: var(--ps-radius);
+    background: var(--ps-surface-2);
+    transition: border-color 0.3s var(--ps-ease), background-color 0.3s var(--ps-ease), opacity 0.3s var(--ps-ease);
+}
+
+.task-marker {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--ps-border-strong);
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--ps-text-muted);
+}
+
+.task-marker ::deep .icon {
+    width: 16px;
+    height: 16px;
+}
+
+.task-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.task-done {
+    opacity: 0.72;
+}
+
+.task-done .task-marker {
+    border-color: rgba(87, 199, 147, 0.5);
+    background: var(--ps-success-wash);
+    color: var(--ps-success);
+    animation: task-check 0.4s var(--ps-ease);
+}
+
+.task-done .task-text {
+    color: var(--ps-text-muted);
+    text-decoration: line-through;
+    text-decoration-color: rgba(169, 165, 158, 0.5);
+}
+
+.task-current {
+    border-color: rgba(216, 30, 44, 0.55);
+    background: linear-gradient(90deg, var(--ps-crimson-wash), transparent 70%), var(--ps-surface-2);
+}
+
+.task-current .task-marker {
+    border-color: var(--ps-crimson-bright);
+    color: var(--ps-text);
+    box-shadow: 0 0 12px var(--ps-crimson-glow);
+}
+
+.task-current .task-text {
+    font-weight: 600;
+}
+
+@keyframes task-check {
+    from {
+        transform: scale(0.6);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}

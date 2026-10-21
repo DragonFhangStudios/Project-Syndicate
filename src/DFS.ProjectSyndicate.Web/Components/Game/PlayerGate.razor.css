@@ -1,0 +1,26 @@
+.gate {
+    max-width: 640px;
+}
+
+.gate-loading {
+    display: flex;
+    align-items: center;
+    gap: var(--ps-space-3);
+    padding: var(--ps-space-6) 0;
+    color: var(--ps-text-muted);
+}
+
+.gate-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--ps-border-strong);
+    border-top-color: var(--ps-crimson-bright);
+    border-radius: 50%;
+    animation: gate-spin 0.8s linear infinite;
+}
+
+@keyframes gate-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

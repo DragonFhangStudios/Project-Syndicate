@@ -1,0 +1,56 @@
+@implements IDisposable
+@inject PlayerState State
+
+@* Loads the character for this circuit and renders ChildContent only when its save is usable. *@
+@switch (State.Status)
+{
+    case PlayerLoadStatus.Loaded when State.Player is not null && State.CharacterId == CharacterId:
+        @ChildContent(State.Player)
+        break;
+
+    case PlayerLoadStatus.UnknownCharacter:
+        <div class="page gate">
+            <h1>Character not found</h1>
+            <Notice Tone="warning" Title="No such character">
+                <p>There is no demo character with that name.</p>
+            </Notice>
+            <p><a class="btn btn-ghost" href="">Back to character selection</a></p>
+        </div>
+        break;
+
+    case PlayerLoadStatus.Corrupt:
+        <div class="page gate">
+            <h1>Save file unreadable</h1>
+            <Notice Tone="danger" Title="This character's progress could not be loaded">
+                <p>The save file is damaged. It has been left untouched so it can be inspected or restored, and nothing will overwrite it.</p>
+            </Notice>
+            <p><a class="btn btn-ghost" href="">Back to character selection</a></p>
+        </div>
+        break;
+
+    default:
+        <div class="gate gate-loading" role="status">
+            <span class="gate-spinner" aria-hidden="true"></span>
+            <span>Loading character…</span>
+        </div>
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired] public string CharacterId { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public RenderFragment<SyndicatePlayer> ChildContent { get; set; } = default!;
+
+    protected override void OnInitialized() => State.Changed += OnStateChanged;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (State.CharacterId != CharacterId || State.Status is null)
+        {
+            await State.LoadAsync(CharacterId);
+        }
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.Changed -= OnStateChanged;
+}

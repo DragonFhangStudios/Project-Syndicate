@@ -1,47 +1,91 @@
 @page "/play/{CharacterId}"
-@implements IDisposable
-@inject PlayerState State
+@inject IJobCatalog Jobs
 
 <PageTitle>Dashboard · Project Syndicate</PageTitle>
 
-@switch (State.Status)
-{
-    case null:
-        <p>Loading…</p>
-        break;
-    case PlayerLoadStatus.UnknownCharacter:
-        <h1>Character not found</h1>
-        <p><a href="">Back to character selection</a></p>
-        break;
-    case PlayerLoadStatus.Corrupt:
-        <h1>Save file unreadable</h1>
-        <p>This character's save could not be read. It has been left untouched so it can be inspected or restored.</p>
-        <p><a href="">Back to character selection</a></p>
-        break;
-    default:
-        var player = State.Player!;
-        <h1>@player.Name</h1>
-        <dl>
-            <dt>Level</dt><dd>@player.Level</dd>
-            <dt>XP</dt><dd>@player.XP</dd>
-            <dt>Rank</dt><dd>Tier @player.Tier: @ProgressionManager.GetTierName(player.Tier)</dd>
-            <dt>Cash</dt><dd>$@player.Cash.ToString("N0")</dd>
-            <dt>Strength</dt><dd>@player.Strength</dd>
-            <dt>Intellect</dt><dd>@player.Intellect</dd>
-            <dt>Endurance</dt><dd>@player.Endurance</dd>
-            <dt>Job</dt><dd>@(string.IsNullOrEmpty(player.JobData.AssignedJobId) ? "None assigned" : player.JobData.AssignedJobId)</dd>
-        </dl>
-        break;
-}
+<PlayerGate CharacterId="@CharacterId" Context="player">
+    @{
+        var activeJob = Jobs.Find(player.JobData.AssignedJobId);
+        var nextTier = ProgressionManager.GetNextTierRequirement(player);
+        int levelXpNeeded = player.Level * 100;
+    }
+    <div class="page">
+        <header class="page-header">
+            <div class="identity">
+                <Monogram Name="@player.Name" Size="lg" />
+                <div class="page-header-text">
+                    <p class="eyebrow eyebrow-crimson">Dashboard</p>
+                    <h1>@player.Name</h1>
+                    <div class="row">
+                        <TierBadge Tier="@player.Tier" />
+                        <span class="muted">Level @player.Level</span>
+                    </div>
+                </div>
+            </div>
+            <a class="btn btn-primary" href="@($"play/{CharacterId}/jobs")">
+                @(activeJob is null ? "Find work" : "Continue job")
+                <Icon Name="arrow-right" />
+            </a>
+        </header>
+
+        <div class="grid grid-stats">
+            <StatTile Label="Cash" Value="@Format.Money(player.Cash)" IconName="coin" />
+            <StatTile Label="Level" Value="@player.Level.ToString()" IconName="trend"
+                      Hint="@($"{Format.Number(levelXpNeeded - player.XP)} XP to level {player.Level + 1}")" />
+            <StatTile Label="Rank" Value="@ProgressionManager.GetTierName(player.Tier)" IconName="star" Tone="gold"
+                      Hint="@($"Tier {player.Tier} of {ProgressionManager.MaxTier}")" />
+            <StatTile Label="Job earnings" Value="@Format.Money(player.JobData.TotalEarned)" IconName="briefcase" />
+        </div>
+
+        <div class="grid grid-2">
+            <Panel Eyebrow="Progress" Title="Experience">
+                <ProgressMeter Label="@($"Level {player.Level}")" Value="player.XP" Max="levelXpNeeded"
+                               ValueText="@($"{Format.Number(player.XP)} / {Format.Number(levelXpNeeded)} XP")" />
+                <p class="muted">Each level needs 100 XP for every level you already have.</p>
+            </Panel>
+
+            <Panel Eyebrow="Attributes" Title="Character stats">
+                <dl class="attrs">
+                    <div><dt>Strength</dt><dd class="tabular">@player.Strength</dd></div>
+                    <div><dt>Intellect</dt><dd class="tabular">@player.Intellect</dd></div>
+                    <div><dt>Endurance</dt><dd class="tabular">@player.Endurance</dd></div>
+                </dl>
+            </Panel>
+
+            <Panel Eyebrow="Employment" Title="@(activeJob?.Title ?? "No active contract")" Variant="@(activeJob is null ? null : "accent")">
+                @if (activeJob is not null)
+                {
+                    <p class="muted">@activeJob.Description</p>
+                    <ProgressMeter Label="Tasks" Value="player.JobData.CurrentTaskIndex" Max="activeJob.Tasks.Count"
+                                   ValueText="@($"{player.JobData.CurrentTaskIndex} of {activeJob.Tasks.Count} done")" />
+                    <p><a href="@($"play/{CharacterId}/jobs")">Go to the active job</a></p>
+                }
+                else
+                {
+                    <p class="muted">You're between jobs. The job board has honest work waiting.</p>
+                    <p><a href="@($"play/{CharacterId}/jobs")">Browse the job board</a></p>
+                }
+            </Panel>
+
+            <Panel Eyebrow="Career" Title="Advancement" Variant="gold">
+                @if (nextTier is not null)
+                {
+                    <p>Next rank: <strong class="text-gold">Tier @nextTier.TierLevel · @nextTier.TierName</strong></p>
+                    <ProgressMeter Label="Experience" Tone="gold" Value="player.XP" Max="nextTier.XPNeeded"
+                                   ValueText="@($"{Format.Number(player.XP)} / {Format.Number(nextTier.XPNeeded)} XP")" />
+                    <ProgressMeter Label="Cash on hand" Tone="gold" Value="player.Cash" Max="nextTier.CashNeeded + nextTier.PromotionCost"
+                                   ValueText="@($"{Format.Money(player.Cash)} / {Format.Money(nextTier.CashNeeded + nextTier.PromotionCost)}")" />
+                    <p class="muted">Promotion costs a @Format.Money(nextTier.PromotionCost) fee on top of the @Format.Money(nextTier.CashNeeded) you need to hold.</p>
+                }
+                else
+                {
+                    <p class="text-gold">You've reached the top civilian rank.</p>
+                }
+            </Panel>
+        </div>
+    </div>
+</PlayerGate>
 
 @code {
     [Parameter] public string CharacterId { get; set; } = string.Empty;
-
-    protected override void OnInitialized() => State.Changed += OnStateChanged;
-
-    protected override async Task OnParametersSetAsync() => await State.LoadAsync(CharacterId);
-
-    private void OnStateChanged() => InvokeAsync(StateHasChanged);
-
-    public void Dispose() => State.Changed -= OnStateChanged;
 }

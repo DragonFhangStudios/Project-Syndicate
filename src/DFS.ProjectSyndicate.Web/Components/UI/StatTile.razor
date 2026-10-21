@@ -1,0 +1,23 @@
+@* Headline number with a label. Tone: "gold" or "crimson" tints the value. *@
+<div class="stat @(Tone is null ? null : "stat-" + Tone)">
+    <div class="stat-top">
+        <span class="eyebrow">@Label</span>
+        @if (IconName is not null)
+        {
+            <Icon Name="@IconName" CssClass="stat-icon" />
+        }
+    </div>
+    <span class="stat-value tabular">@Value</span>
+    @if (Hint is not null)
+    {
+        <span class="stat-hint">@Hint</span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Value { get; set; } = string.Empty;
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string? IconName { get; set; }
+    [Parameter] public string? Tone { get; set; }
+}

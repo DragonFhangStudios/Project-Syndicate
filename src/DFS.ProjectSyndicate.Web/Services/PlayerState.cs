@@ -16,7 +16,15 @@ public sealed class PlayerState(GameService game, ILogger<PlayerState> logger)
 
     public async Task LoadAsync(string characterId, CancellationToken cancellationToken = default)
     {
-        CharacterId = characterId;
+        if (CharacterId != characterId)
+        {
+            // Never show the previous character's data while the new one loads.
+            CharacterId = characterId;
+            Player = null;
+            Status = null;
+            Changed?.Invoke();
+        }
+
         var result = await game.GetOrCreatePlayerAsync(characterId, cancellationToken);
         Apply(result);
     }
