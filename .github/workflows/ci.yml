@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build:
     name: Build (${{ matrix.configuration }})
-    # WPF (net8.0-windows) requires a Windows runner.
+    # WPF (net10.0-windows) requires a Windows runner.
     runs-on: windows-latest
     timeout-minutes: 15
     strategy:
@@ -33,7 +33,7 @@ jobs:
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Restore
         run: dotnet restore ProjectSyndicate.sln
