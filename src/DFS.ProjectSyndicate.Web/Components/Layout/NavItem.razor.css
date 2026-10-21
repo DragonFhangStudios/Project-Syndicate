@@ -1,0 +1,71 @@
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 44px;
+    border-radius: var(--ps-radius-sm);
+    color: var(--ps-text-muted);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.18s var(--ps-ease), background-color 0.18s var(--ps-ease);
+}
+
+.nav-item ::deep .nav-icon {
+    flex: none;
+    width: 20px;
+    height: 20px;
+}
+
+.nav-item:hover {
+    color: var(--ps-text);
+}
+
+/* Desktop sidebar */
+.nav-side {
+    position: relative;
+    padding: 0.55rem 0.85rem;
+}
+
+.nav-side:hover {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.nav-side.active {
+    background: linear-gradient(90deg, var(--ps-crimson-wash), transparent);
+    color: var(--ps-text);
+}
+
+.nav-side.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 22%;
+    bottom: 22%;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--ps-crimson-bright);
+    box-shadow: 0 0 10px var(--ps-crimson-glow);
+}
+
+.nav-side.active ::deep .nav-icon {
+    color: var(--ps-crimson-text);
+}
+
+/* Mobile tab bar */
+.nav-tab {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.35rem 0.25rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+}
+
+.nav-tab.active {
+    color: var(--ps-text);
+}
+
+.nav-tab.active ::deep .nav-icon {
+    color: var(--ps-crimson-text);
+    filter: drop-shadow(0 0 6px var(--ps-crimson-glow));
+}

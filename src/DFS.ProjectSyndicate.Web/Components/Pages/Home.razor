@@ -1,0 +1,50 @@
+﻿@page "/"
+@inject GameService Game
+@inject PlayerState State
+
+<PageTitle>Choose your character · Project Syndicate</PageTitle>
+
+<div class="page">
+    <header class="page-header select-hero">
+        <div class="page-header-text">
+            <p class="eyebrow eyebrow-crimson">Civilian career</p>
+            <h1>Choose your character</h1>
+            <p class="lede">Every empire starts on a street corner. Pick who you'll be, take honest work, and build a career the city can't ignore.</p>
+        </div>
+    </header>
+
+    <Notice Tone="info" Title="Demo characters">
+        <p>These are local demonstration characters for development. There is no sign-in, and progress is saved on this computer only.</p>
+    </Notice>
+
+    @if (_characters is null)
+    {
+        <p class="muted" role="status">Loading characters…</p>
+    }
+    else
+    {
+        <div class="grid grid-3">
+            @foreach (var (profile, result) in _characters)
+            {
+                <CharacterCard Profile="profile" Player="@(result.Status == PlayerLoadStatus.Loaded ? result.Player : null)" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<(DemoCharacter Profile, PlayerLoadResult Result)>? _characters;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Leaving a character: the navigation and stat bar go back to the selection state.
+        State.Clear();
+
+        var list = new List<(DemoCharacter, PlayerLoadResult)>();
+        foreach (var profile in DemoCharacters.All)
+        {
+            list.Add((profile, await Game.PreviewPlayerAsync(profile.Id)));
+        }
+        _characters = list;
+    }
+}

@@ -1,0 +1,118 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject PlayerState State
+@inject NavigationManager Nav
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="shell">
+    <aside class="sidebar">
+        <a class="brand" href="">
+            <span class="brand-mark" aria-hidden="true"><span>S</span></span>
+            <span class="brand-text">
+                <span class="brand-name">Project Syndicate</span>
+                <span class="brand-sub">Civilian career</span>
+            </span>
+        </a>
+
+        <nav class="sidebar-nav" aria-label="Primary">
+            @NavLinks("side")
+        </nav>
+
+        @if (Player is { } player)
+        {
+            <div class="who">
+                <Monogram Name="@player.Name" Size="sm" />
+                <div class="who-text">
+                    <p class="who-name">@player.Name</p>
+                    <TierBadge Tier="@player.Tier" />
+                </div>
+            </div>
+        }
+
+        <p class="sidebar-foot">Local demo build. Progress is saved on this computer.</p>
+    </aside>
+
+    <div class="shell-main">
+        <header class="topbar @(Player is null ? "topbar-empty" : null)">
+            <a class="brand brand-compact" href="">
+                <span class="brand-mark" aria-hidden="true"><span>S</span></span>
+                <span class="brand-name">Syndicate</span>
+            </a>
+
+            @if (Player is { } current)
+            {
+                <dl class="statbar" aria-label="@($"{current.Name} summary")">
+                    <div class="statbar-item">
+                        <dt>Cash</dt>
+                        <dd class="tabular">@Format.Money(current.Cash)</dd>
+                    </div>
+                    <div class="statbar-item">
+                        <dt>Level</dt>
+                        <dd class="tabular">@current.Level</dd>
+                    </div>
+                    <div class="statbar-item statbar-rank">
+                        <dt>Rank</dt>
+                        <dd>@ProgressionManager.GetTierName(current.Tier)</dd>
+                    </div>
+                </dl>
+            }
+        </header>
+
+        <main id="main" tabindex="-1" class="@(_hasNavigated ? "animate-pages" : null)">
+            @Body
+        </main>
+    </div>
+
+    <nav class="tabbar" aria-label="Primary">
+        @NavLinks("tab")
+    </nav>
+</div>
+
+@* Persistent live region: game feedback is announced to screen readers when this text changes. *@
+<div class="visually-hidden" role="status" aria-live="polite">@State.Announcement</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <button type="button" class="dismiss" aria-label="Dismiss">✕</button>
+</div>
+
+@code {
+    private SyndicatePlayer? Player => State.Status == PlayerLoadStatus.Loaded ? State.Player : null;
+
+    // Character-specific links appear once a character is loaded.
+    private string? CharacterBase => Player is not null ? $"play/{State.CharacterId}" : null;
+
+    private RenderFragment NavLinks(string variant) =>
+        @<text>
+            @if (CharacterBase is { } basePath)
+            {
+                <NavItem Href="@basePath" IconName="dashboard" Label="Dashboard" Variant="@variant" Exact="true" />
+                <NavItem Href="@($"{basePath}/jobs")" IconName="briefcase" Label="Jobs" Variant="@variant" />
+            }
+            <NavItem Href="" IconName="users" Label="Characters" Variant="@variant" Exact="true" />
+        </text>;
+
+    private bool _hasNavigated;
+
+    protected override void OnInitialized()
+    {
+        State.Changed += OnStateChanged;
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _hasNavigated = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        State.Changed -= OnStateChanged;
+        Nav.LocationChanged -= OnLocationChanged;
+    }
+}

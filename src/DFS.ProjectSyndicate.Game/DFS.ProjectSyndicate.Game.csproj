@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Types moved here from the WPF app keep their original DFS.ProjectSyndicate.* namespaces. -->
+    <RootNamespace>DFS.ProjectSyndicate</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DFS.JobSystem\DFS.JobSystem.csproj" />
+  </ItemGroup>
+
+</Project>

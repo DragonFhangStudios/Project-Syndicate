@@ -1,0 +1,36 @@
+@* Card surface with an optional header. Variant: "accent" (crimson edge) or "gold" (prestige). *@
+<section class="panel @VariantClass @CssClass" aria-labelledby="@(Title is null ? null : _headingId)">
+    @if (Title is not null || Eyebrow is not null || Actions is not null)
+    {
+        <header class="panel-header">
+            <div class="panel-heading">
+                @if (Eyebrow is not null)
+                {
+                    <p class="eyebrow">@Eyebrow</p>
+                }
+                @if (Title is not null)
+                {
+                    <h2 id="@_headingId" class="panel-title">@Title</h2>
+                }
+            </div>
+            @Actions
+        </header>
+    }
+    <div class="panel-body">
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    private static int _counter;
+    private readonly string _headingId = "panel-" + Interlocked.Increment(ref _counter);
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Eyebrow { get; set; }
+    [Parameter] public string? Variant { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string? VariantClass => Variant is null ? null : "panel-" + Variant;
+}

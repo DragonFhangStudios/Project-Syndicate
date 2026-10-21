@@ -1,0 +1,17 @@
+@* Inline message. Tone: "info", "warning" or "danger" (danger is announced immediately). *@
+<div class="notice notice-@Tone" role="@(Tone == "danger" ? "alert" : "status")">
+    <Icon Name="@(Tone == "info" ? "clipboard" : "alert")" CssClass="notice-icon" />
+    <div class="notice-body">
+        @if (Title is not null)
+        {
+            <p class="notice-title">@Title</p>
+        }
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Tone { get; set; } = "info";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

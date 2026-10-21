@@ -1,0 +1,52 @@
+@* Job board listing. The accept button appears only when an OnAccept handler is supplied. *@
+<article class="job-card" aria-labelledby="@HeadingId">
+    <div class="job-head">
+        <p class="eyebrow eyebrow-crimson">Civilian contract</p>
+        <h3 id="@HeadingId" class="job-title">@Job.Title</h3>
+        <p class="muted">@Job.Description</p>
+    </div>
+
+    <dl class="job-terms">
+        <div>
+            <dt>Pay</dt>
+            <dd class="text-gold tabular">@Format.Money(Job.Payout)</dd>
+        </div>
+        @if (XpReward is int xp)
+        {
+            <div>
+                <dt>Experience</dt>
+                <dd class="tabular">+@xp XP</dd>
+            </div>
+        }
+        <div>
+            <dt>Tasks</dt>
+            <dd class="tabular">@Job.Tasks.Count</dd>
+        </div>
+    </dl>
+
+    @if (OnAccept.HasDelegate)
+    {
+        <div class="job-actions">
+            <button type="button" class="btn btn-primary" disabled="@(!CanAccept || Busy)"
+                    aria-describedby="@(DisabledReason is not null ? NoteId : null)" @onclick="OnAccept">
+                Accept contract
+            </button>
+            @if (DisabledReason is not null)
+            {
+                <p id="@NoteId" class="job-note">@DisabledReason</p>
+            }
+        </div>
+    }
+</article>
+
+@code {
+    [Parameter, EditorRequired] public Job Job { get; set; } = default!;
+    [Parameter] public int? XpReward { get; set; }
+    [Parameter] public bool CanAccept { get; set; } = true;
+    [Parameter] public string? DisabledReason { get; set; }
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback OnAccept { get; set; }
+
+    private string HeadingId => "job-" + Job.Id;
+    private string NoteId => "job-note-" + Job.Id;
+}

@@ -1,4 +1,3 @@
-# Build verification only: the solution has no test projects yet.
 name: CI
 
 on:
@@ -17,8 +16,8 @@ concurrency:
 
 jobs:
   build:
-    name: Build (${{ matrix.configuration }})
-    # WPF (net8.0-windows) requires a Windows runner.
+    name: Build and test (${{ matrix.configuration }})
+    # WPF (net10.0-windows) requires a Windows runner.
     runs-on: windows-latest
     timeout-minutes: 15
     strategy:
@@ -33,7 +32,7 @@ jobs:
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Restore
         run: dotnet restore ProjectSyndicate.sln
@@ -41,3 +40,6 @@ jobs:
       # MSB9008 (missing project reference) is an error so a broken reference cannot pass silently.
       - name: Build
         run: dotnet build ProjectSyndicate.sln --configuration ${{ matrix.configuration }} --no-restore -warnaserror:MSB9008
+
+      - name: Test
+        run: dotnet test ProjectSyndicate.sln --configuration ${{ matrix.configuration }} --no-build --verbosity normal

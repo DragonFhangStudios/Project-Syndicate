@@ -1,0 +1,232 @@
+.shell {
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* --- Sidebar (desktop) --- */
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ps-space-5);
+    height: 100vh;
+    height: 100dvh;
+    padding: var(--ps-space-5) var(--ps-space-4);
+    border-right: 1px solid var(--ps-border);
+    background: linear-gradient(180deg, rgba(20, 20, 24, 0.94), rgba(10, 10, 12, 0.94));
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0 var(--ps-space-2);
+    color: var(--ps-text);
+    text-decoration: none;
+}
+
+.brand:hover {
+    color: var(--ps-text);
+}
+
+.brand-mark {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 30px;
+    height: 30px;
+    margin: 4px;
+    border: 1px solid var(--ps-crimson-bright);
+    transform: rotate(45deg);
+    background: radial-gradient(circle at 30% 30%, rgba(216, 30, 44, 0.55), transparent 75%);
+    box-shadow: 0 0 18px -4px var(--ps-crimson-glow);
+}
+
+.brand-mark span {
+    transform: rotate(-45deg);
+    font-family: var(--ps-font-display);
+    font-weight: 700;
+}
+
+.brand-text {
+    display: grid;
+    min-width: 0;
+}
+
+.brand-name {
+    font-family: var(--ps-font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.brand-sub {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ps-crimson-text);
+}
+
+.sidebar-nav {
+    display: grid;
+    gap: var(--ps-space-1);
+}
+
+.who {
+    display: flex;
+    align-items: center;
+    gap: var(--ps-space-3);
+    padding: var(--ps-space-3);
+    border: 1px solid var(--ps-border);
+    border-radius: var(--ps-radius);
+    background: var(--ps-surface);
+}
+
+.who-text {
+    display: grid;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.who-name {
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-foot {
+    margin-top: auto;
+    padding: 0 var(--ps-space-2);
+    font-size: 0.75rem;
+    color: var(--ps-text-faint);
+}
+
+/* --- Top bar --- */
+
+.shell-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: var(--ps-space-4);
+    min-height: 64px;
+    padding: 0.6rem clamp(1rem, 3vw, 2.25rem);
+    border-bottom: 1px solid var(--ps-border);
+    background: rgba(10, 10, 12, 0.82);
+    backdrop-filter: blur(12px);
+}
+
+.brand-compact {
+    display: none;
+    padding: 0;
+}
+
+/* On desktop the bar only carries the stat summary; with no character it would be an empty strip. */
+@media (min-width: 961px) {
+    .topbar-empty {
+        display: none;
+    }
+}
+
+.statbar {
+    display: flex;
+    gap: clamp(1rem, 3vw, 2rem);
+    margin: 0 0 0 auto;
+}
+
+.statbar-item {
+    display: grid;
+    justify-items: end;
+}
+
+.statbar dt {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ps-text-muted);
+}
+
+.statbar dd {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.statbar-rank dd {
+    color: var(--ps-gold);
+}
+
+main {
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.25rem) 3rem;
+}
+
+main:focus {
+    outline: none;
+}
+
+/* --- Mobile tab bar --- */
+
+.tabbar {
+    display: none;
+}
+
+@media (max-width: 960px) {
+    .shell {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .brand-compact {
+        display: flex;
+    }
+
+    .tabbar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 30;
+        display: grid;
+        grid-auto-columns: minmax(0, 1fr);
+        grid-auto-flow: column;
+        padding: 0.3rem 0.5rem calc(0.3rem + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--ps-border);
+        background: rgba(12, 12, 14, 0.96);
+        backdrop-filter: blur(12px);
+    }
+
+    main {
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-compact .brand-name {
+        display: none;
+    }
+
+    .statbar-rank {
+        display: none;
+    }
+}

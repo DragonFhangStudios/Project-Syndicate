@@ -1,0 +1,9 @@
+@* Career rank in gold, the colour reserved for prestige. *@
+<span class="tier-badge">
+    <Icon Name="star" CssClass="tier-icon" />
+    <span>Tier @Tier · @ProgressionManager.GetTierName(Tier)</span>
+</span>
+
+@code {
+    [Parameter, EditorRequired] public int Tier { get; set; }
+}

@@ -4,15 +4,24 @@ namespace DFS.ProjectSyndicate.Models
 {
 	public class SyndicatePlayer : ObservableObject
 	{
+		private string _id = string.Empty;
 		private string _name;
 		private int _level;
 		private int _xp;
+		private int _totalXp;
 		private int _tier = 1;
 		private float _cash;
 		private float _strength;
 		private float _intellect;
 		private float _endurance;
 		private PlayerJobData _jobData = new();
+
+		// Stable character identifier, used as the save-file key (e.g. "sonny-perelli").
+		public string Id
+		{
+			get => _id;
+			set => SetProperty(ref _id, value);
+		}
 
 		public string Name
 		{
@@ -26,10 +35,18 @@ namespace DFS.ProjectSyndicate.Models
 			set => SetProperty(ref _level, value);
 		}
 
+		// Progress within the current level; reduced when a level is gained.
 		public int XP
 		{
 			get => _xp;
 			set => SetProperty(ref _xp, value);
+		}
+
+		// Lifetime XP earned. Never reduced; career tiers are measured against this.
+		public int TotalXP
+		{
+			get => _totalXp;
+			set => SetProperty(ref _totalXp, value);
 		}
 
 		public int Tier
@@ -80,21 +97,31 @@ namespace DFS.ProjectSyndicate.Models
 			Endurance = 5;
 		}
 
-		public void AddXP(int amount)
+		// Adds XP to both level progress and the lifetime total. Returns the number of levels gained.
+		public int AddXP(int amount)
 		{
+			if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount), "XP cannot be negative.");
+
+			TotalXP += amount;
 			XP += amount;
-			CheckLevelUp();
+			return CheckLevelUp();
 		}
 
-		private void CheckLevelUp()
+		// XP needed to advance from the current level.
+		public int XPToNextLevel => Level * 100;
+
+		private int CheckLevelUp()
 		{
+			int levelsGained = 0;
 			int xpNeeded = Level * 100;
 			while (XP >= xpNeeded)
 			{
 				Level++;
 				XP -= xpNeeded;
 				xpNeeded = Level * 100;
+				levelsGained++;
 			}
+			return levelsGained;
 		}
 
 		public bool MeetsRequirements(float minStr, float minInt, float minEnd)

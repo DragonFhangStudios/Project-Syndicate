@@ -1,0 +1,125 @@
+@page "/play/{CharacterId}"
+@inject IJobCatalog Jobs
+@inject PlayerState State
+
+<PageTitle>Dashboard · Project Syndicate</PageTitle>
+
+<PlayerGate CharacterId="@CharacterId" Context="player">
+    @{
+        var activeJob = Jobs.Find(player.JobData.AssignedJobId);
+        var nextTier = ProgressionManager.GetNextTierRequirement(player);
+        bool canPromote = ProgressionManager.CanPromote(player);
+    }
+    <div class="page">
+        <header class="page-header">
+            <div class="identity">
+                <Monogram Name="@player.Name" Size="lg" />
+                <div class="page-header-text">
+                    <p class="eyebrow eyebrow-crimson">Dashboard</p>
+                    <h1>@player.Name</h1>
+                    <div class="row">
+                        <TierBadge Tier="@player.Tier" />
+                        <span class="muted">Level @player.Level</span>
+                    </div>
+                </div>
+            </div>
+            <a class="btn btn-primary" href="@($"play/{CharacterId}/jobs")">
+                @(activeJob is null ? "Find work" : "Continue job")
+                <Icon Name="arrow-right" />
+            </a>
+        </header>
+
+        @if (_promotionMessage is not null)
+        {
+            <RewardBanner Eyebrow="Promotion" Title="@_promotionMessage" OnDismiss="() => _promotionMessage = null" />
+        }
+        else if (State.LastResult is { Success: false } failure)
+        {
+            <Notice Tone="warning">
+                <p>@failure.Message</p>
+            </Notice>
+        }
+
+        <div class="grid grid-stats">
+            <StatTile Label="Cash" Value="@Format.Money(player.Cash)" IconName="coin" />
+            <StatTile Label="Level" Value="@player.Level.ToString()" IconName="trend"
+                      Hint="@($"{Format.Number(player.XPToNextLevel - player.XP)} XP to level {player.Level + 1}")" />
+            <StatTile Label="Rank" Value="@ProgressionManager.GetTierName(player.Tier)" IconName="star" Tone="gold"
+                      Hint="@($"Tier {player.Tier} of {ProgressionManager.MaxTier}")" />
+            <StatTile Label="Jobs completed" Value="@Format.Number(player.JobData.JobsCompleted)" IconName="briefcase"
+                      Hint="@($"{Format.Money(player.JobData.TotalEarned)} earned")" />
+        </div>
+
+        <div class="grid grid-2">
+            <Panel Eyebrow="Progress" Title="Experience">
+                <ProgressMeter Label="@($"Level {player.Level}")" Value="player.XP" Max="player.XPToNextLevel"
+                               ValueText="@($"{Format.Number(player.XP)} / {Format.Number(player.XPToNextLevel)} XP")" />
+                <dl class="attrs">
+                    <div><dt>Lifetime XP</dt><dd class="tabular">@Format.Number(player.TotalXP)</dd></div>
+                </dl>
+                <p class="muted">Each level needs 100 XP for every level you already have. Lifetime XP never goes down and counts toward promotion.</p>
+            </Panel>
+
+            <Panel Eyebrow="Attributes" Title="Character stats">
+                <dl class="attrs">
+                    <div><dt>Strength</dt><dd class="tabular">@player.Strength</dd></div>
+                    <div><dt>Intellect</dt><dd class="tabular">@player.Intellect</dd></div>
+                    <div><dt>Endurance</dt><dd class="tabular">@player.Endurance</dd></div>
+                </dl>
+            </Panel>
+
+            <Panel Eyebrow="Employment" Title="@(activeJob?.Title ?? "No active contract")" Variant="@(activeJob is null ? null : "accent")">
+                @if (activeJob is not null)
+                {
+                    <p class="muted">@activeJob.Description</p>
+                    <ProgressMeter Label="Tasks" Value="player.JobData.CurrentTaskIndex" Max="activeJob.Tasks.Count"
+                                   ValueText="@($"{player.JobData.CurrentTaskIndex} of {activeJob.Tasks.Count} done")" />
+                    <p><a href="@($"play/{CharacterId}/jobs")">Go to the active job</a></p>
+                }
+                else
+                {
+                    <p class="muted">You're between jobs. The job board has honest work waiting.</p>
+                    <p><a href="@($"play/{CharacterId}/jobs")">Browse the job board</a></p>
+                }
+            </Panel>
+
+            <Panel Eyebrow="Career" Title="Advancement" Variant="gold">
+                @if (nextTier is not null)
+                {
+                    <p>Next rank: <strong class="text-gold">Tier @nextTier.TierLevel · @nextTier.TierName</strong></p>
+                    <ProgressMeter Label="Lifetime XP" Tone="gold" Value="player.TotalXP" Max="nextTier.XPNeeded"
+                                   ValueText="@($"{Format.Number(player.TotalXP)} / {Format.Number(nextTier.XPNeeded)} XP")" />
+                    <ProgressMeter Label="Cash on hand" Tone="gold" Value="player.Cash" Max="nextTier.CashNeeded + nextTier.PromotionCost"
+                                   ValueText="@($"{Format.Money(player.Cash)} / {Format.Money(nextTier.CashNeeded + nextTier.PromotionCost)}")" />
+                    <p class="muted">You need @Format.Money(nextTier.CashNeeded) on hand plus the @Format.Money(nextTier.PromotionCost) promotion fee, which is deducted.</p>
+                    <div>
+                        <button type="button" class="btn btn-gold" disabled="@(!canPromote || State.Busy)"
+                                aria-describedby="promotion-note" @onclick="PromoteAsync">
+                            <Icon Name="star" />
+                            Apply for promotion
+                        </button>
+                    </div>
+                    <p id="promotion-note" class="muted">
+                        @(canPromote ? $"You qualify for {nextTier.TierName}." : "Requirements not met yet.")
+                    </p>
+                }
+                else
+                {
+                    <p class="text-gold">You've reached the top civilian rank.</p>
+                }
+            </Panel>
+        </div>
+    </div>
+</PlayerGate>
+
+@code {
+    [Parameter] public string CharacterId { get; set; } = string.Empty;
+
+    private string? _promotionMessage;
+
+    private async Task PromoteAsync()
+    {
+        var result = await State.PromoteAsync();
+        _promotionMessage = result is { Success: true } ? result.Message : null;
+    }
+}

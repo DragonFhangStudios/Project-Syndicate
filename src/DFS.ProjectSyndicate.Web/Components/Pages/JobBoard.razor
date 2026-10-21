@@ -1,0 +1,100 @@
+@page "/play/{CharacterId}/jobs"
+@inject IJobCatalog Jobs
+@inject PlayerState State
+
+<PageTitle>Job board · Project Syndicate</PageTitle>
+
+<PlayerGate CharacterId="@CharacterId" Context="player">
+    @{
+        var activeJob = Jobs.Find(player.JobData.AssignedJobId);
+        int done = player.JobData.CurrentTaskIndex;
+    }
+    <div class="page">
+        <header class="page-header">
+            <div class="page-header-text">
+                <p class="eyebrow eyebrow-crimson">Civilian career</p>
+                <h1>Job board</h1>
+                <p class="lede">Honest work, honest pay. Take a contract, see every task through, and collect your earnings.</p>
+            </div>
+        </header>
+
+        @if (State.LastReward is { } reward)
+        {
+            <RewardBanner @ref="_banner" Eyebrow="Contract complete" Title="@reward.JobTitle"
+                          Cash="reward.Cash" Xp="reward.XP" LevelsGained="reward.LevelsGained" NewLevel="reward.NewLevel"
+                          OnDismiss="State.DismissReward" />
+        }
+        else if (State.LastResult is { Success: false } failure)
+        {
+            <Notice Tone="warning">
+                <p>@failure.Message</p>
+            </Notice>
+        }
+
+        @if (activeJob is not null && done < activeJob.Tasks.Count)
+        {
+            <Panel Eyebrow="Active contract" Title="@activeJob.Title" Variant="accent">
+                <Actions>
+                    <span class="pay-chip tabular">@Format.Money(activeJob.Payout) · +@activeJob.XPReward XP</span>
+                </Actions>
+                <ChildContent>
+                    <p class="muted">@activeJob.Description</p>
+                    <ProgressMeter Label="Progress" Value="done" Max="activeJob.Tasks.Count"
+                                   ValueText="@($"{done} of {activeJob.Tasks.Count} tasks")" />
+                    <TaskChecklist Tasks="activeJob.Tasks" CompletedCount="done" />
+                    <div class="job-cta">
+                        <button type="button" class="btn btn-primary" disabled="@State.Busy" @onclick="CompleteTaskAsync">
+                            <Icon Name="check" />
+                            @(done == activeJob.Tasks.Count - 1 ? "Finish the job" : "Complete task"): @activeJob.Tasks[done]
+                        </button>
+                        @if (done == activeJob.Tasks.Count - 1)
+                        {
+                            <p class="muted">Last task. You'll be paid when it's done.</p>
+                        }
+                    </div>
+                </ChildContent>
+            </Panel>
+        }
+
+        <section class="stack" aria-labelledby="available-heading">
+            <div class="section-title">
+                <h2 id="available-heading">Available contracts</h2>
+                <span class="muted">@Jobs.All.Count listed · @player.JobData.JobsCompleted completed</span>
+            </div>
+            <div class="grid grid-2">
+                @foreach (var job in Jobs.All)
+                {
+                    <JobCard Job="job" XpReward="job.XPReward"
+                             CanAccept="activeJob is null" Busy="State.Busy"
+                             DisabledReason="@(activeJob is null ? null : "Finish your active contract first.")"
+                             OnAccept="() => AcceptAsync(job.Id)" />
+                }
+            </div>
+        </section>
+    </div>
+</PlayerGate>
+
+@code {
+    [Parameter] public string CharacterId { get; set; } = string.Empty;
+
+    private RewardBanner? _banner;
+    private bool _focusBanner;
+
+    private async Task AcceptAsync(string jobId) => await State.AcceptJobAsync(jobId);
+
+    private async Task CompleteTaskAsync()
+    {
+        var result = await State.CompleteTaskAsync();
+        // The task button disappears with the last task; move focus to the reward instead.
+        _focusBanner = result?.Reward is not null;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusBanner && _banner is not null)
+        {
+            _focusBanner = false;
+            await _banner.FocusAsync();
+        }
+    }
+}

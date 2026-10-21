@@ -1,0 +1,30 @@
+﻿@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Error · Project Syndicate</PageTitle>
+
+<div class="page">
+    <header class="page-header-text">
+        <p class="eyebrow eyebrow-crimson">Error</p>
+        <h1>Something went wrong</h1>
+        <p class="lede">An error occurred while processing your request.</p>
+    </header>
+
+    @if (ShowRequestId)
+    {
+        <p class="muted">Request ID: <code>@RequestId</code></p>
+    }
+
+    <p><a class="btn btn-ghost" href="">Back to character selection</a></p>
+</div>
+
+@code{
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

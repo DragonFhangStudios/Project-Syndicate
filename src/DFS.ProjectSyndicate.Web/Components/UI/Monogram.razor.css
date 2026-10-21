@@ -1,0 +1,34 @@
+.monogram {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    border: 1px solid rgba(255, 93, 104, 0.45);
+    border-radius: var(--ps-radius);
+    background:
+        linear-gradient(145deg, rgba(216, 30, 44, 0.35), transparent 60%),
+        linear-gradient(180deg, var(--ps-surface-3), var(--ps-surface));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px -14px var(--ps-crimson-glow);
+    color: var(--ps-text);
+    font-family: var(--ps-font-display);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+}
+
+.monogram-sm {
+    width: 38px;
+    height: 38px;
+    font-size: 0.9rem;
+}
+
+.monogram-md {
+    width: 56px;
+    height: 56px;
+    font-size: 1.25rem;
+}
+
+.monogram-lg {
+    width: 76px;
+    height: 76px;
+    font-size: 1.7rem;
+    border-radius: var(--ps-radius-lg);
+}

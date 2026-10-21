@@ -1,0 +1,44 @@
+.identity {
+    display: flex;
+    align-items: center;
+    gap: var(--ps-space-4);
+    min-width: 0;
+}
+
+.identity h1 {
+    overflow-wrap: anywhere;
+}
+
+.attrs {
+    display: grid;
+    gap: var(--ps-space-2);
+}
+
+.attrs > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--ps-space-3);
+    padding: var(--ps-space-2) 0;
+    border-bottom: 1px solid var(--ps-border);
+}
+
+.attrs > div:last-child {
+    border-bottom: 0;
+}
+
+.attrs dt {
+    color: var(--ps-text-muted);
+}
+
+.attrs dd {
+    font-family: var(--ps-font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+@media (max-width: 480px) {
+    .identity {
+        align-items: flex-start;
+    }
+}

@@ -1,0 +1,78 @@
+using DFS.ProjectSyndicate.Jobs;
+using DFS.ProjectSyndicate.Managers;
+using DFS.ProjectSyndicate.Models;
+
+namespace DFS.ProjectSyndicate.Careers
+{
+	public sealed record JobReward(string JobId, string JobTitle, int Cash, int XP, int LevelsGained, int NewLevel);
+
+	public sealed record CareerResult(bool Success, string Message, JobReward? Reward = null)
+	{
+		public static CareerResult Ok(string message, JobReward? reward = null) => new(true, message, reward);
+		public static CareerResult Fail(string message) => new(false, message);
+	}
+
+	// Civilian career rules. Pure functions on a player: no I/O, no shared state.
+	public sealed class CareerService
+	{
+		private readonly IJobCatalog _jobs;
+
+		public CareerService(IJobCatalog jobs)
+		{
+			_jobs = jobs;
+		}
+
+		public CareerResult AcceptJob(SyndicatePlayer player, string jobId)
+		{
+			// A job id that is no longer in the catalog does not block taking new work.
+			if (_jobs.Find(player.JobData.AssignedJobId) is not null)
+				return CareerResult.Fail("Finish your current job before taking another.");
+
+			var job = _jobs.Find(jobId);
+			if (job is null || job.Tasks.Count == 0)
+				return CareerResult.Fail("That job is not available.");
+
+			player.JobData.AssignedJobId = job.Id;
+			player.JobData.CurrentTaskIndex = 0;
+			return CareerResult.Ok($"You took the {job.Title} job. First task: {job.Tasks[0]}.");
+		}
+
+		public CareerResult CompleteCurrentTask(SyndicatePlayer player)
+		{
+			var job = _jobs.Find(player.JobData.AssignedJobId);
+			if (job is null)
+				return CareerResult.Fail("You don't have an active job.");
+
+			int index = player.JobData.CurrentTaskIndex;
+			if (index < 0 || index >= job.Tasks.Count)
+				return CareerResult.Fail("This job's progress is out of range.");
+
+			string task = job.Tasks[index];
+			player.JobData.CurrentTaskIndex = index + 1;
+
+			if (index + 1 < job.Tasks.Count)
+				return CareerResult.Ok($"Done: {task}. Next: {job.Tasks[index + 1]}.");
+
+			// Final task: close the job before paying out, so the same job can never pay twice.
+			player.JobData.AssignedJobId = string.Empty;
+			player.JobData.CurrentTaskIndex = 0;
+			player.JobData.JobsCompleted++;
+			player.JobData.TotalEarned += job.Payout;
+			player.Cash += job.Payout;
+			int levelsGained = player.AddXP(job.XPReward);
+
+			var reward = new JobReward(job.Id, job.Title, job.Payout, job.XPReward, levelsGained, player.Level);
+			string message = $"{job.Title} complete: earned ${job.Payout} and {job.XPReward} XP."
+				+ (levelsGained > 0 ? $" You reached level {player.Level}." : string.Empty);
+			return CareerResult.Ok(message, reward);
+		}
+
+		public CareerResult Promote(SyndicatePlayer player)
+		{
+			if (!ProgressionManager.TryPromote(player))
+				return CareerResult.Fail("You don't meet the requirements for promotion yet.");
+
+			return CareerResult.Ok($"Promoted to Tier {player.Tier}: {ProgressionManager.GetTierName(player.Tier)}.");
+		}
+	}
+}

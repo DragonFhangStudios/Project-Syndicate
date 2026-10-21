@@ -1,0 +1,56 @@
+@* Character selection card. Shows saved progress when a save exists, otherwise the starting profile. *@
+<article class="character-card @(Player is null ? "is-unavailable" : null)" aria-labelledby="@HeadingId">
+    <header class="cc-head">
+        <Monogram Name="@Profile.Name" Size="md" />
+        <div class="cc-title">
+            <h2 id="@HeadingId" class="cc-name">@Profile.Name</h2>
+            @if (Player is not null)
+            {
+                <TierBadge Tier="@Player.Tier" />
+            }
+        </div>
+    </header>
+
+    @if (Player is not null)
+    {
+        <dl class="cc-facts">
+            <div>
+                <dt>Level</dt>
+                <dd class="tabular">@Player.Level</dd>
+            </div>
+            <div>
+                <dt>Cash</dt>
+                <dd class="tabular">@Format.Money(Player.Cash)</dd>
+            </div>
+            <div>
+                <dt>Jobs</dt>
+                <dd class="tabular">@Format.Number(Player.JobData.JobsCompleted)</dd>
+            </div>
+        </dl>
+
+        <dl class="cc-attrs" aria-label="Attributes">
+            <div><dt>STR</dt><dd>@Player.Strength</dd></div>
+            <div><dt>INT</dt><dd>@Player.Intellect</dd></div>
+            <div><dt>END</dt><dd>@Player.Endurance</dd></div>
+        </dl>
+
+        <a class="btn btn-primary btn-block cc-play" href="@($"play/{Profile.Id}")">
+            Play as @FirstName
+            <Icon Name="arrow-right" />
+        </a>
+    }
+    else
+    {
+        <Notice Tone="danger" Title="Save file unreadable">
+            <p>This character's save is damaged and has been left untouched.</p>
+        </Notice>
+    }
+</article>
+
+@code {
+    [Parameter, EditorRequired] public DemoCharacter Profile { get; set; } = default!;
+    [Parameter] public SyndicatePlayer? Player { get; set; }
+
+    private string HeadingId => "character-" + Profile.Id;
+    private string FirstName => Profile.Name.Split(' ')[0];
+}
