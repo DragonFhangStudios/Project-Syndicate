@@ -26,6 +26,15 @@
     pointer-events: none;
 }
 
+.reward:focus {
+    outline: none;
+}
+
+.reward:focus-visible {
+    outline: 2px solid var(--ps-gold);
+    outline-offset: 3px;
+}
+
 .reward-seal {
     display: grid;
     place-items: center;

@@ -38,7 +38,8 @@ namespace DFS.ProjectSyndicate.Managers
 			if (!TierRequirements.ContainsKey(nextTier)) return false;
 
 			var req = TierRequirements[nextTier];
-			return player.XP >= req.XPNeeded
+			// Lifetime XP, not level progress: level-ups reduce XP but never TotalXP.
+			return player.TotalXP >= req.XPNeeded
 				&& player.Cash >= (req.CashNeeded + req.PromotionCost);
 		}
 
@@ -50,7 +51,7 @@ namespace DFS.ProjectSyndicate.Managers
 			var req = TierRequirements[nextTier];
 
 			return $"Promotion to {req.TierName} Requirements:\n" +
-				   $"• XP: {req.XPNeeded} (You have: {player.XP})\n" +
+				   $"• Lifetime XP: {req.XPNeeded} (You have: {player.TotalXP})\n" +
 				   $"• Total Cash: ${req.CashNeeded:N0} (You have: ${player.Cash:N0})\n" +
 				   $"• Promotion Fee: ${req.PromotionCost:N0}";
 		}

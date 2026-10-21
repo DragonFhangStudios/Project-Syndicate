@@ -13,7 +13,7 @@ public class GameServiceTests : IDisposable
     public GameServiceTests()
     {
         _repo = new JsonFilePlayerRepository(_dir.Path);
-        _game = new GameService(_repo);
+        _game = TestJobs.CreateGame(_repo);
     }
 
     public void Dispose() => _dir.Dispose();

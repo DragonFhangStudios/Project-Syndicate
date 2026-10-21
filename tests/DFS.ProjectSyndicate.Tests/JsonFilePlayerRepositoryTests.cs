@@ -28,10 +28,12 @@ public class JsonFilePlayerRepositoryTests : IDisposable
         player.Cash = 1234.5f;
         player.Level = 3;
         player.XP = 42;
+        player.TotalXP = 342;
         player.Tier = 2;
         player.JobData.AssignedJobId = "trash_cleanup";
         player.JobData.CurrentTaskIndex = 2;
         player.JobData.TotalEarned = 15;
+        player.JobData.JobsCompleted = 3;
 
         await _repo.SaveAsync(player);
         var result = await _repo.LoadAsync("carlo-valentini");
@@ -43,11 +45,54 @@ public class JsonFilePlayerRepositoryTests : IDisposable
         Assert.Equal(1234.5f, loaded.Cash);
         Assert.Equal(3, loaded.Level);
         Assert.Equal(42, loaded.XP);
+        Assert.Equal(342, loaded.TotalXP);
         Assert.Equal(2, loaded.Tier);
         Assert.Equal(6, loaded.Strength);
         Assert.Equal("trash_cleanup", loaded.JobData.AssignedJobId);
         Assert.Equal(2, loaded.JobData.CurrentTaskIndex);
         Assert.Equal(15, loaded.JobData.TotalEarned);
+        Assert.Equal(3, loaded.JobData.JobsCompleted);
+    }
+
+    [Fact]
+    public async Task Save_WritesCurrentSchemaVersion()
+    {
+        await _repo.SaveAsync(DemoCharacters.Find("sonny-perelli")!.CreatePlayer());
+
+        string json = await File.ReadAllTextAsync(_dir.File("sonny-perelli.json"));
+
+        Assert.Contains($"\"SchemaVersion\": {PlayerSaveData.CurrentSchemaVersion}", json);
+        Assert.Equal(2, PlayerSaveData.CurrentSchemaVersion);
+    }
+
+    [Fact]
+    public async Task Load_Version1Save_RebuildsLifetimeXp()
+    {
+        // Phase 2A wrote v1 saves without TotalXP or JobsCompleted.
+        await File.WriteAllTextAsync(_dir.File("sonny-perelli.json"), """
+            {
+              "SchemaVersion": 1, "CharacterId": "sonny-perelli", "Name": "Sonny Perelli",
+              "Level": 3, "XP": 50, "Tier": 1, "Cash": 1500, "Strength": 8, "Intellect": 5, "Endurance": 7,
+              "AssignedJobId": "", "CurrentTaskIndex": 0, "TotalEarned": 10
+            }
+            """);
+
+        var result = await _repo.LoadAsync("sonny-perelli");
+
+        Assert.Equal(PlayerLoadStatus.Loaded, result.Status);
+        Assert.Equal(350, result.Player!.TotalXP); // 100 (level 2) + 200 (level 3) + 50
+        Assert.Equal(0, result.Player.JobData.JobsCompleted);
+        Assert.Equal(10, result.Player.JobData.TotalEarned);
+    }
+
+    [Fact]
+    public async Task Load_LifetimeXpBelowLevelProgress_IsCorrupt()
+    {
+        await File.WriteAllTextAsync(_dir.File("sonny-perelli.json"), """
+            { "SchemaVersion": 2, "CharacterId": "sonny-perelli", "Name": "Sonny", "Level": 1, "XP": 80, "TotalXP": 10, "Tier": 1 }
+            """);
+
+        Assert.Equal(PlayerLoadStatus.Corrupt, (await _repo.LoadAsync("sonny-perelli")).Status);
     }
 
     [Fact]

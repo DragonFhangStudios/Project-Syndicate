@@ -1,5 +1,5 @@
-@* Celebration shown after a reward. Pages announce the same text through their own live region. *@
-<div class="reward @(LevelsGained > 0 ? "reward-levelup" : null)">
+@* Celebration shown after a reward. The layout's live region announces the same message. *@
+<div class="reward @(LevelsGained > 0 ? "reward-levelup" : null)" tabindex="-1" @ref="_root">
     <div class="reward-seal" aria-hidden="true">
         <Icon Name="star" />
     </div>
@@ -35,4 +35,9 @@
     [Parameter] public int LevelsGained { get; set; }
     [Parameter] public int NewLevel { get; set; }
     [Parameter] public EventCallback OnDismiss { get; set; }
+
+    private ElementReference _root;
+
+    // Moves keyboard focus to the banner, e.g. when the button that triggered it disappears.
+    public ValueTask FocusAsync() => _root.FocusAsync();
 }

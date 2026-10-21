@@ -10,5 +10,8 @@
 
 		// Total money earned from jobs
 		public int TotalEarned { get; set; } = 0;
+
+		// Number of jobs finished
+		public int JobsCompleted { get; set; } = 0;
 	}
 }

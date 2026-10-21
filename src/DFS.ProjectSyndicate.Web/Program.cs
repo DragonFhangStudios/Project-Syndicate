@@ -1,3 +1,4 @@
+using DFS.ProjectSyndicate.Careers;
 using DFS.ProjectSyndicate.Gameplay;
 using DFS.ProjectSyndicate.Jobs;
 using DFS.ProjectSyndicate.Persistence;
@@ -17,6 +18,7 @@ string saveDirectory = Path.GetFullPath(Path.Combine(
 
 builder.Services.AddSingleton<IPlayerRepository>(new JsonFilePlayerRepository(saveDirectory));
 builder.Services.AddSingleton<IJobCatalog>(new JobCatalog(JobCatalog.DefaultPath));
+builder.Services.AddSingleton<CareerService>();
 builder.Services.AddSingleton<GameService>();
 builder.Services.AddScoped<PlayerState>();
 

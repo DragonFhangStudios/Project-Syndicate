@@ -1,0 +1,27 @@
+.pay-chip {
+    padding: 0.25rem 0.7rem;
+    border: 1px solid rgba(214, 178, 70, 0.4);
+    border-radius: 999px;
+    background: var(--ps-gold-wash);
+    color: var(--ps-gold);
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.job-cta {
+    display: grid;
+    gap: var(--ps-space-2);
+    justify-items: start;
+}
+
+.job-cta .btn {
+    text-align: left;
+}
+
+@media (max-width: 680px) {
+    .job-cta,
+    .job-cta .btn {
+        width: 100%;
+    }
+}

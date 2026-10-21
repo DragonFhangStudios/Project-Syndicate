@@ -69,6 +69,9 @@
     </nav>
 </div>
 
+@* Persistent live region: game feedback is announced to screen readers when this text changes. *@
+<div class="visually-hidden" role="status" aria-live="polite">@State.Announcement</div>
+
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>

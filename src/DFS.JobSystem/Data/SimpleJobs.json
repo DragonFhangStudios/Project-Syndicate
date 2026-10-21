@@ -4,6 +4,7 @@
     "Title": "Street Trash Cleanup",
     "Description": "Clean up garbage from the downtown area.",
     "Payout": 5,
+    "XPReward": 40,
     "Tasks": [
       "Go to warehouse",
       "Grab supplies",

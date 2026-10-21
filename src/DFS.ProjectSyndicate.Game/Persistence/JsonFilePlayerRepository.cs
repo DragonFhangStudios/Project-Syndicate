@@ -63,6 +63,7 @@ namespace DFS.ProjectSyndicate.Persistence
 			}
 
 			if (data is null) return PlayerLoadResult.Corrupt("empty save");
+			if (!data.TryUpgrade()) return PlayerLoadResult.Corrupt($"unsupported schema version {data.SchemaVersion}");
 
 			string? problem = data.Validate(characterId);
 			return problem is null ? PlayerLoadResult.Loaded(data.ToPlayer()) : PlayerLoadResult.Corrupt(problem);
