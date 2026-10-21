@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DFS.JobSystem\DFS.JobSystem.csproj" />
-    <ProjectReference Include="..\DFS.Core\DFS.Core.csproj" />
   </ItemGroup>
 
 </Project>
