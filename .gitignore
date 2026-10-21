@@ -1,0 +1,11 @@
+# Build output
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Runtime save data written by JsonSaveManager
+player_save.json
