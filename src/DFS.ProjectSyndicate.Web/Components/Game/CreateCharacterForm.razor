@@ -1,0 +1,73 @@
+@inject GameService Game
+@inject NavigationManager Nav
+
+@* New-character card. Name rules come from the game library, so the browser and server agree. *@
+<section class="create-card" aria-labelledby="create-heading">
+    <div class="create-head">
+        <span class="create-mark" aria-hidden="true"><Icon Name="plus" /></span>
+        <div>
+            <p class="eyebrow eyebrow-crimson">New civilian</p>
+            <h3 id="create-heading" class="create-title">Create a character</h3>
+        </div>
+    </div>
+
+    <form class="create-form" @onsubmit="CreateAsync" novalidate>
+        <label for="character-name" class="create-label">Character name</label>
+        <input id="character-name" class="create-input" type="text" autocomplete="off" spellcheck="false"
+               maxlength="@CharacterNames.MaxLength" @bind="_name" @bind:event="oninput"
+               aria-invalid="@(_error is null ? "false" : "true")"
+               aria-describedby="@(_error is null ? "character-name-hint" : "character-name-error character-name-hint")"
+               disabled="@_busy" />
+        @if (_error is not null)
+        {
+            <p id="character-name-error" class="create-error" role="alert">@_error</p>
+        }
+        <p id="character-name-hint" class="create-hint">
+            @CharacterNames.MinLength–@CharacterNames.MaxLength letters; spaces, apostrophes, hyphens and periods are fine.
+        </p>
+
+        <dl class="create-start" aria-label="Starting profile">
+            <div><dt>Path</dt><dd>Civilian</dd></div>
+            <div><dt>Level</dt><dd>1</dd></div>
+            <div><dt>Cash</dt><dd>@Format.Money(NewCharacters.StartingCash)</dd></div>
+            <div><dt>Stats</dt><dd>@NewCharacters.StartingAttribute each</dd></div>
+        </dl>
+
+        <button type="submit" class="btn btn-primary btn-block" disabled="@_busy">
+            @(_busy ? "Creating…" : "Create character")
+        </button>
+    </form>
+</section>
+
+@code {
+    private string _name = string.Empty;
+    private string? _error;
+    private bool _busy;
+
+    // Identifies this form submission; the server returns the same character if it is sent twice.
+    private Guid _requestId = Guid.NewGuid();
+
+    private async Task CreateAsync()
+    {
+        if (_busy) return;
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            var result = await Game.CreateCharacterAsync(_name, _requestId);
+            if (result.Success)
+            {
+                Nav.NavigateTo($"play/{result.CharacterId}");
+                return;
+            }
+
+            _error = result.Error;
+            _requestId = Guid.NewGuid();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

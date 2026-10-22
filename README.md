@@ -54,7 +54,20 @@ Schema versions:
 | Version | Changes |
 | --- | --- |
 | 1 | Initial format. |
-| 2 | Adds `TotalXP` (lifetime XP, never reduced, used for career tiers) and `JobsCompleted`. Version 1 saves load with `TotalXP` rebuilt from `Level` and `XP`, and are rewritten as version 2 on the next save. |
+| 2 | Adds `TotalXP` (lifetime XP, never reduced, used for career tiers) and `JobsCompleted`. Version 1 saves load with `TotalXP` rebuilt from `Level` and `XP`. |
+| 3 | Adds `CareerPath` (always `Civilian` for now) and `CreatedAtUtc` (player-created characters). Version 1 and 2 saves load as Civilian with no creation time. |
+
+Older saves are upgraded in memory when loaded and rewritten in the current version only when that
+character next saves; listing characters never rewrites a save.
+
+## Characters
+
+- **Player-created characters** get a random id such as `char-3f9a1b2c4d5e`, independent of the name,
+  and start as Civilians at level 1 with $500 and 5 in each attribute. Names are 2–24 characters:
+  letters, spaces, apostrophes, hyphens and periods; demo names and existing names are taken.
+  Creation never overwrites an existing save, and a repeated form submission creates one character.
+- **Demo characters** (Sonny Perelli, Carlo Valentini, Giovanni Ragoli) are development test profiles
+  with fixed ids. Their saves are kept as they are.
 
 ## Progression
 

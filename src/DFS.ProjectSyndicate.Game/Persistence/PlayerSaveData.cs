@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using DFS.ProjectSyndicate.Models;
 
 namespace DFS.ProjectSyndicate.Persistence
@@ -5,15 +6,20 @@ namespace DFS.ProjectSyndicate.Persistence
 	// On-disk save format. Kept separate from SyndicatePlayer so the file format is explicit and versioned.
 	//   v1: initial format.
 	//   v2: adds TotalXP (lifetime XP, used for career tiers) and JobsCompleted.
-	//       v1 files load with TotalXP rebuilt from Level and XP, and JobsCompleted = 0;
-	//       they are rewritten as v2 on the next save.
+	//       v1 files load with TotalXP rebuilt from Level and XP, and JobsCompleted = 0.
+	//   v3: adds CareerPath and CreatedAtUtc (player-created characters).
+	//       v1/v2 files load as Civilian with no creation time.
+	// Older files are upgraded in memory and rewritten in the current version on their next save.
 	public sealed class PlayerSaveData
 	{
-		public const int CurrentSchemaVersion = 2;
+		public const int CurrentSchemaVersion = 3;
 
 		public int SchemaVersion { get; set; }
 		public string CharacterId { get; set; } = string.Empty;
 		public string Name { get; set; } = string.Empty;
+		[JsonConverter(typeof(JsonStringEnumConverter<CareerPath>))]
+		public CareerPath CareerPath { get; set; } = CareerPath.Civilian;
+		public DateTime? CreatedAtUtc { get; set; }
 		public int Level { get; set; }
 		public int XP { get; set; }
 		public int TotalXP { get; set; }
@@ -33,6 +39,8 @@ namespace DFS.ProjectSyndicate.Persistence
 			SchemaVersion = CurrentSchemaVersion,
 			CharacterId = player.Id,
 			Name = player.Name,
+			CareerPath = player.CareerPath,
+			CreatedAtUtc = player.CreatedAtUtc,
 			Level = player.Level,
 			XP = player.XP,
 			TotalXP = player.TotalXP,
@@ -51,6 +59,8 @@ namespace DFS.ProjectSyndicate.Persistence
 		public SyndicatePlayer ToPlayer() => new(Name)
 		{
 			Id = CharacterId,
+			CareerPath = CareerPath,
+			CreatedAtUtc = CreatedAtUtc,
 			Level = Level,
 			XP = XP,
 			TotalXP = TotalXP,
@@ -71,14 +81,24 @@ namespace DFS.ProjectSyndicate.Persistence
 		// Brings an older record up to the current schema in memory. Returns false for unknown versions.
 		public bool TryUpgrade()
 		{
-			if (SchemaVersion == CurrentSchemaVersion) return true;
-			if (SchemaVersion != 1) return false;
+			if (SchemaVersion < 1 || SchemaVersion > CurrentSchemaVersion) return false;
 
-			// Reaching level L takes 100 * (1 + 2 + ... + (L - 1)) XP; add progress within the level.
-			long rebuilt = 100L * (Level - 1) * Level / 2 + XP;
-			TotalXP = (int)Math.Clamp(rebuilt, 0, int.MaxValue);
-			JobsCompleted = 0;
-			SchemaVersion = CurrentSchemaVersion;
+			if (SchemaVersion == 1)
+			{
+				// Reaching level L takes 100 * (1 + 2 + ... + (L - 1)) XP; add progress within the level.
+				long rebuilt = 100L * (Level - 1) * Level / 2 + XP;
+				TotalXP = (int)Math.Clamp(rebuilt, 0, int.MaxValue);
+				JobsCompleted = 0;
+				SchemaVersion = 2;
+			}
+
+			if (SchemaVersion == 2)
+			{
+				CareerPath = CareerPath.Civilian;
+				CreatedAtUtc = null;
+				SchemaVersion = 3;
+			}
+
 			return true;
 		}
 
@@ -88,6 +108,7 @@ namespace DFS.ProjectSyndicate.Persistence
 			if (SchemaVersion != CurrentSchemaVersion) return $"unsupported schema version {SchemaVersion}";
 			if (CharacterId != expectedCharacterId) return "character id does not match the file name";
 			if (string.IsNullOrWhiteSpace(Name)) return "missing name";
+			if (!Enum.IsDefined(CareerPath)) return "unknown career path";
 			if (Level < 1 || XP < 0 || TotalXP < XP || Tier < 1) return "level, XP or tier out of range";
 			if (!float.IsFinite(Cash)) return "cash is not a number";
 			if (CurrentTaskIndex < 0 || TotalEarned < 0 || JobsCompleted < 0) return "job progress out of range";

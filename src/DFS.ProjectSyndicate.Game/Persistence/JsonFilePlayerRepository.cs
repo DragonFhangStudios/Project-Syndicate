@@ -41,13 +41,50 @@ namespace DFS.ProjectSyndicate.Persistence
 					throw new CorruptSaveException(player.Id, existing.Problem!);
 			}
 
+			// Write the whole file first, then swap it in, so an interrupted save never leaves a partial file.
+			string tempPath = await WriteTempAsync(player, path, cancellationToken);
+			File.Move(tempPath, path, overwrite: true);
+		}
+
+		public async Task<bool> CreateAsync(SyndicatePlayer player, CancellationToken cancellationToken = default)
+		{
+			string path = GetSavePath(player.Id);
+			if (File.Exists(path)) return false;
+
+			string tempPath = await WriteTempAsync(player, path, cancellationToken);
+			try
+			{
+				// Without overwrite the move fails if the file appeared meanwhile, so an existing save is never replaced.
+				File.Move(tempPath, path, overwrite: false);
+				return true;
+			}
+			catch (IOException) when (File.Exists(path))
+			{
+				File.Delete(tempPath);
+				return false;
+			}
+		}
+
+		public Task<IReadOnlyList<string>> ListCharacterIdsAsync(CancellationToken cancellationToken = default)
+		{
+			IReadOnlyList<string> ids = Directory.Exists(_directory)
+				? Directory.EnumerateFiles(_directory, "*.json")
+					.Select(Path.GetFileNameWithoutExtension)
+					.Where(CharacterIds.IsValid)
+					.Select(id => id!)
+					.Order(StringComparer.Ordinal)
+					.ToList()
+				: [];
+			return Task.FromResult(ids);
+		}
+
+		private async Task<string> WriteTempAsync(SyndicatePlayer player, string path, CancellationToken cancellationToken)
+		{
 			Directory.CreateDirectory(_directory);
 			string json = JsonSerializer.Serialize(PlayerSaveData.FromPlayer(player), JsonOptions);
-
-			// Write the whole file first, then swap it in, so an interrupted save never leaves a partial file.
-			string tempPath = path + ".tmp";
+			string tempPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
 			await File.WriteAllTextAsync(tempPath, json, cancellationToken);
-			File.Move(tempPath, path, overwrite: true);
+			return tempPath;
 		}
 
 		private static PlayerLoadResult Parse(string characterId, string json)
