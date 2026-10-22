@@ -56,21 +56,50 @@
             </Panel>
         }
 
+        @{
+            // Easiest requirements first; within a group, by pay. All from job data.
+            var listed = Jobs.All
+                .Select(job => (Job: job, Requirements: JobEligibility.Requirements(player, job)))
+                .OrderBy(j => j.Job.MinTier).ThenBy(j => j.Job.MinLevel).ThenBy(j => j.Job.Payout)
+                .ToList();
+            var open = listed.Where(j => j.Requirements.All(r => r.Met)).ToList();
+            var locked = listed.Where(j => j.Requirements.Any(r => !r.Met)).ToList();
+        }
+
         <section class="stack" aria-labelledby="available-heading">
             <div class="section-title">
-                <h2 id="available-heading">Available contracts</h2>
-                <span class="muted">@Jobs.All.Count listed · @player.JobData.JobsCompleted completed</span>
+                <h2 id="available-heading">Available now</h2>
+                <span class="muted">@open.Count of @listed.Count open · @player.JobData.JobsCompleted completed</span>
             </div>
             <div class="grid grid-2">
-                @foreach (var job in Jobs.All)
+                @foreach (var (job, requirements) in open)
                 {
-                    <JobCard Job="job" XpReward="job.XPReward"
+                    <JobCard @key="job.Id" Job="job" Requirements="requirements"
                              CanAccept="activeJob is null" Busy="State.Busy"
                              DisabledReason="@(activeJob is null ? null : "Finish your active contract first.")"
                              OnAccept="() => AcceptAsync(job.Id)" />
                 }
             </div>
         </section>
+
+        @if (locked.Count > 0)
+        {
+            <section class="stack" aria-labelledby="locked-heading">
+                <div class="section-title">
+                    <div>
+                        <h2 id="locked-heading">Locked</h2>
+                        <p class="muted">Level up and earn promotions to open better-paying work.</p>
+                    </div>
+                </div>
+                <div class="grid grid-2">
+                    @foreach (var (job, requirements) in locked)
+                    {
+                        <JobCard @key="job.Id" Job="job" Requirements="requirements"
+                                 CanAccept="false" Busy="State.Busy" OnAccept="() => AcceptAsync(job.Id)" />
+                    }
+                </div>
+            </section>
+        }
     </div>
 </PlayerGate>
 

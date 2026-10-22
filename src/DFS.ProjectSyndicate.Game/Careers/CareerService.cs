@@ -32,6 +32,11 @@ namespace DFS.ProjectSyndicate.Careers
 			if (job is null || job.Tasks.Count == 0)
 				return CareerResult.Fail("That job is not available.");
 
+			// Enforced here, not only by the UI: a request for a locked job is refused.
+			var unmet = JobEligibility.Requirements(player, job).Where(r => !r.Met).Select(r => r.Label).ToList();
+			if (unmet.Count > 0)
+				return CareerResult.Fail($"{job.Title} requires {string.Join(" and ", unmet)}.");
+
 			player.JobData.AssignedJobId = job.Id;
 			player.JobData.CurrentTaskIndex = 0;
 			return CareerResult.Ok($"You took the {job.Title} job. First task: {job.Tasks[0]}.");

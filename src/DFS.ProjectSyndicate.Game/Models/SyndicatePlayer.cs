@@ -15,12 +15,28 @@ namespace DFS.ProjectSyndicate.Models
 		private float _intellect;
 		private float _endurance;
 		private PlayerJobData _jobData = new();
+		private CareerPath _careerPath = CareerPath.Civilian;
+		private DateTime? _createdAtUtc;
 
 		// Stable character identifier, used as the save-file key (e.g. "sonny-perelli").
+		// Independent of the display name, which may change or repeat.
 		public string Id
 		{
 			get => _id;
 			set => SetProperty(ref _id, value);
+		}
+
+		public CareerPath CareerPath
+		{
+			get => _careerPath;
+			set => SetProperty(ref _careerPath, value);
+		}
+
+		// When a player-created character was created; null for the demo characters.
+		public DateTime? CreatedAtUtc
+		{
+			get => _createdAtUtc;
+			set => SetProperty(ref _createdAtUtc, value);
 		}
 
 		public string Name

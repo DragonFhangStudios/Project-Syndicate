@@ -1,13 +1,19 @@
 @* Character selection card. Shows saved progress when a save exists, otherwise the starting profile. *@
 <article class="character-card @(Player is null ? "is-unavailable" : null)" aria-labelledby="@HeadingId">
     <header class="cc-head">
-        <Monogram Name="@Profile.Name" Size="md" />
+        <Monogram Name="@DisplayName" Size="md" />
         <div class="cc-title">
-            <h2 id="@HeadingId" class="cc-name">@Profile.Name</h2>
-            @if (Player is not null)
-            {
-                <TierBadge Tier="@Player.Tier" />
-            }
+            <h3 id="@HeadingId" class="cc-name">@DisplayName</h3>
+            <div class="cc-badges">
+                @if (Player is not null)
+                {
+                    <TierBadge Tier="@Player.Tier" />
+                }
+                @if (Character.IsDemo)
+                {
+                    <span class="cc-demo">Demo</span>
+                }
+            </div>
         </div>
     </header>
 
@@ -34,7 +40,7 @@
             <div><dt>END</dt><dd>@Player.Endurance</dd></div>
         </dl>
 
-        <a class="btn btn-primary btn-block cc-play" href="@($"play/{Profile.Id}")">
+        <a class="btn btn-primary btn-block cc-play" href="@($"play/{Character.Id}")">
             Play as @FirstName
             <Icon Name="arrow-right" />
         </a>
@@ -48,9 +54,13 @@
 </article>
 
 @code {
-    [Parameter, EditorRequired] public DemoCharacter Profile { get; set; } = default!;
-    [Parameter] public SyndicatePlayer? Player { get; set; }
+    [Parameter, EditorRequired] public CharacterSummary Character { get; set; } = default!;
 
-    private string HeadingId => "character-" + Profile.Id;
-    private string FirstName => Profile.Name.Split(' ')[0];
+    private SyndicatePlayer? Player => Character.State.Status == PlayerLoadStatus.Loaded ? Character.State.Player : null;
+
+    private string DisplayName =>
+        Player?.Name ?? DemoCharacters.Find(Character.Id)?.Name ?? "Unreadable character";
+
+    private string HeadingId => "character-" + Character.Id;
+    private string FirstName => DisplayName.Split(' ')[0];
 }

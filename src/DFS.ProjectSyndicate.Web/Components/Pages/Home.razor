@@ -9,42 +9,59 @@
         <div class="page-header-text">
             <p class="eyebrow eyebrow-crimson">Civilian career</p>
             <h1>Choose your character</h1>
-            <p class="lede">Every empire starts on a street corner. Pick who you'll be, take honest work, and build a career the city can't ignore.</p>
+            <p class="lede">Every empire starts on a street corner. Create someone new or pick up where you left off, take honest work, and build a career the city can't ignore.</p>
         </div>
     </header>
 
-    <Notice Tone="info" Title="Demo characters">
-        <p>These are local demonstration characters for development. There is no sign-in, and progress is saved on this computer only.</p>
+    <Notice Tone="info" Title="Local prototype">
+        <p>Characters are saved on this computer only. There is no sign-in: anyone using this computer can play any character here.</p>
     </Notice>
 
-    @if (_characters is null)
+    @if (_created is null || _demo is null)
     {
         <p class="muted" role="status">Loading characters…</p>
     }
     else
     {
-        <div class="grid grid-3">
-            @foreach (var (profile, result) in _characters)
-            {
-                <CharacterCard Profile="profile" Player="@(result.Status == PlayerLoadStatus.Loaded ? result.Player : null)" />
-            }
-        </div>
+        <section class="stack" aria-labelledby="yours-heading">
+            <div class="section-title">
+                <h2 id="yours-heading">Your characters</h2>
+                <span class="muted">@(_created.Count == 0 ? "None yet" : $"{_created.Count} saved")</span>
+            </div>
+            <div class="grid grid-3">
+                <CreateCharacterForm />
+                @foreach (var character in _created)
+                {
+                    <CharacterCard @key="character.Id" Character="character" />
+                }
+            </div>
+        </section>
+
+        <section class="stack" aria-labelledby="demo-heading">
+            <div class="section-title">
+                <div>
+                    <h2 id="demo-heading">Demo characters</h2>
+                    <p class="muted">Development test profiles. Their progress is saved like any other character.</p>
+                </div>
+            </div>
+            <div class="grid grid-3">
+                @foreach (var character in _demo)
+                {
+                    <CharacterCard @key="character.Id" Character="character" />
+                }
+            </div>
+        </section>
     }
 </div>
 
 @code {
-    private List<(DemoCharacter Profile, PlayerLoadResult Result)>? _characters;
+    private IReadOnlyList<CharacterSummary>? _created;
+    private IReadOnlyList<CharacterSummary>? _demo;
 
     protected override async Task OnInitializedAsync()
     {
         // Leaving a character: the navigation and stat bar go back to the selection state.
         State.Clear();
-
-        var list = new List<(DemoCharacter, PlayerLoadResult)>();
-        foreach (var profile in DemoCharacters.All)
-        {
-            list.Add((profile, await Game.PreviewPlayerAsync(profile.Id)));
-        }
-        _characters = list;
+        (_created, _demo) = await Game.ListCharactersAsync();
     }
 }
