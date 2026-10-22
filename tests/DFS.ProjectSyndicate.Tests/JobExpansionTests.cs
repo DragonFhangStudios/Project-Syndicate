@@ -75,6 +75,91 @@ public class JobCatalogDataTests
 
         Assert.Throws<InvalidDataException>(() => new JobCatalog(path));
     }
+
+    private static string JobJson(string idProperty, string title = "A job") =>
+        $$"""{ {{idProperty}} "Title": "{{title}}", "Payout": 10, "XPReward": 5, "Tasks": ["Do the work"] }""";
+
+    private static InvalidDataException LoadFails(string json)
+    {
+        using var dir = new TempSaveDirectory();
+        string path = dir.File("jobs.json");
+        File.WriteAllText(path, json);
+        return Assert.Throws<InvalidDataException>(() => new JobCatalog(path));
+    }
+
+    [Fact]
+    public void DuplicateId_IsRejected_NamingTheIdAndBothEntries()
+    {
+        // JobManager would keep the first and silently drop the second; the catalog refuses the file instead.
+        var error = LoadFails($"[ {JobJson("\"Id\": \"dock_work\",", "Dock Work")}, {JobJson("\"Id\": \"other_job\",")}, {JobJson("\"Id\": \"dock_work\",", "Dock Work Again")} ]");
+
+        Assert.Contains("'dock_work'", error.Message);
+        Assert.Contains("entry 1 and entry 3", error.Message);
+    }
+
+    [Fact]
+    public void DuplicateOfAShippedJob_IsRejected()
+    {
+        string shipped = File.ReadAllText(JobCatalog.DefaultPath).TrimEnd().TrimEnd(']');
+        var error = LoadFails(shipped + ", " + JobJson("\"Id\": \"trash_cleanup\",", "Second Trash Cleanup") + " ]");
+
+        Assert.Contains("'trash_cleanup'", error.Message);
+    }
+
+    [Theory]
+    [InlineData("")]                 // no Id property at all
+    [InlineData("\"Id\": null,")]
+    [InlineData("\"Id\": \"\",")]
+    [InlineData("\"Id\": \"   \",")]
+    public void MissingId_IsRejected_WithItsEntryNumber(string idProperty)
+    {
+        var error = LoadFails($"[ {JobJson("\"Id\": \"fine_job\",")}, {JobJson(idProperty)} ]");
+
+        Assert.Contains("entry 2: missing id", error.Message);
+    }
+
+    [Theory]
+    [InlineData("Trash_Cleanup")]
+    [InlineData("trash cleanup")]
+    [InlineData(" trash_cleanup")]
+    [InlineData("trash-cleanup")]
+    [InlineData("trash__cleanup")]
+    [InlineData("_trash")]
+    [InlineData("trash_")]
+    [InlineData("träsh")]
+    public void MalformedId_IsRejected_NamingTheId(string id)
+    {
+        var error = LoadFails($"[ {JobJson($"\"Id\": \"{id}\",")} ]");
+
+        Assert.Contains($"'{id}'", error.Message);
+        Assert.Contains("lowercase", error.Message);
+    }
+
+    [Fact]
+    public void OverlongId_IsRejected()
+    {
+        string id = string.Join("_", Enumerable.Repeat("night", 20));
+
+        Assert.Contains("lowercase", LoadFails($"[ {JobJson($"\"Id\": \"{id}\",")} ]").Message);
+    }
+
+    [Theory]
+    [InlineData("[ null ]", "entry 1 is empty")]
+    [InlineData("[]", "no jobs")]
+    [InlineData("null", "null instead of a list")]
+    [InlineData("[ { \"Id\": \"no_tasks\", \"Title\": \"No tasks\", \"Tasks\": null } ]", "task")]
+    [InlineData("[ { \"Id\": \"half_written\", ", "not valid JSON")]
+    [InlineData("{ \"Id\": \"not_a_list\" }", "not valid JSON")]
+    public void MalformedFile_IsRejected_WithADescription(string json, string expected)
+    {
+        Assert.Contains(expected, LoadFails(json).Message);
+    }
+
+    [Fact]
+    public void ValidateAll_AcceptsTheShippedCatalog()
+    {
+        Assert.Null(JobCatalog.ValidateAll(_catalog.All));
+    }
 }
 
 public class JobEligibilityTests
@@ -206,26 +291,27 @@ public class CareerBalanceTests
         return player;
     }
 
+    // Exact, as documented in the README: a change to jobs or tiers that lengthens (or shortens) the
+    // fastest route must update this test and the README together.
     [Fact]
-    public void NewCharacter_ReachesTier2_InTenToFifteenJobs()
+    public void NewCharacter_FastestRouteToTier2_IsExactlyTenJobs()
     {
         int fewest = FewestJobsToTier2(NewCharacters.Create("char-0000000000aa", "Vinnie", DateTime.UtcNow));
 
-        Assert.InRange(fewest, 10, 15);
+        Assert.Equal(10, fewest);
     }
 
     [Theory]
-    [InlineData("sonny-perelli")]
-    [InlineData("carlo-valentini")]
-    [InlineData("giovanni-ragoli")]
-    public void DemoCharacters_ReachTier2_WithoutGrinding(string id)
+    [InlineData("sonny-perelli", 4)]     // $1,500: XP is the only limit (four Street Trash Cleanups)
+    [InlineData("carlo-valentini", 5)]   // $1,200: needed about 60 Street Trash Cleanups before Phase 3
+    [InlineData("giovanni-ragoli", 4)]   // $3,000: XP is the only limit
+    public void DemoCharacters_ReachTier2_WithoutGrinding(string id, int expectedJobs)
     {
-        // Carlo ($1,200) needed about 60 Street Trash Cleanups before; the new jobs cut that sharply.
-        Assert.InRange(FewestJobsToTier2(DemoCharacters.Find(id)!.CreatePlayer()), 1, 15);
+        Assert.Equal(expectedJobs, FewestJobsToTier2(DemoCharacters.Find(id)!.CreatePlayer()));
     }
 
     [Fact]
-    public async Task TypicalMix_PlayedThroughTheGame_PromotesWithinFifteenJobs()
+    public async Task TypicalMix_PlayedThroughTheGame_PromotesAfterExactlyElevenJobs()
     {
         // A natural route: quick XP jobs to reach level 2, then the better-paying warehouse work.
         using var dir = new TempSaveDirectory();
@@ -244,7 +330,8 @@ public class CareerBalanceTests
             Assert.True(jobs <= 15, "took more than 15 jobs");
         }
 
-        Assert.InRange(jobs, 10, 15);
+        // The route is fixed, so the count is exact: 2 Trash Cleanups, 2 Grocery runs, 7 Warehouse jobs.
+        Assert.Equal(11, jobs);
         Assert.True((await game.PromoteAsync(id)).Result!.Success);
         Assert.Equal(2, (await game.GetOrCreatePlayerAsync(id)).Player!.Tier);
     }
