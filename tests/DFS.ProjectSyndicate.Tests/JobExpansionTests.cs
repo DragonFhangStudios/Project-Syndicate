@@ -14,10 +14,32 @@ public class JobCatalogDataTests
     private readonly JobCatalog _catalog = TestJobs.RealCatalog();
 
     [Fact]
-    public void ShipsFiveJobs_IncludingTheOriginalTrashCleanup()
+    public void ShipsNineJobs_TheOriginalFiveFirst()
     {
-        Assert.Equal(5, _catalog.All.Count);
+        Assert.Equal(
+            ["trash_cleanup", "grocery_delivery", "diner_night_shift", "warehouse_inventory", "night_security",
+             "night_freight_sorting", "fleet_maintenance_crew", "municipal_records_contract", "logistics_dispatch_coordinator"],
+            _catalog.All.Select(j => j.Id));
+    }
 
+    // The five Phase 3 jobs, unchanged by later expansions: balance and existing saves depend on them.
+    [Theory]
+    [InlineData("trash_cleanup", "Street Trash Cleanup", 5, 40, 0, 0, 4)]
+    [InlineData("grocery_delivery", "Grocery Delivery Run", 50, 20, 0, 0, 3)]
+    [InlineData("diner_night_shift", "Diner Night Shift", 100, 15, 0, 0, 5)]
+    [InlineData("warehouse_inventory", "Warehouse Inventory", 130, 30, 2, 0, 5)]
+    [InlineData("night_security", "Night Security Patrol", 220, 45, 0, 2, 6)]
+    public void OriginalJobs_AreUnchanged(string id, string title, int pay, int xp, int minLevel, int minTier, int tasks)
+    {
+        var job = _catalog.Find(id)!;
+
+        Assert.Equal((title, pay, xp, minLevel, minTier, tasks),
+            (job.Title, job.Payout, job.XPReward, job.MinLevel, job.MinTier, job.Tasks.Count));
+    }
+
+    [Fact]
+    public void OriginalTrashCleanup_KeepsItsTasks()
+    {
         var trash = _catalog.Find(TestJobs.TrashCleanup)!;
         Assert.Equal(["Go to warehouse", "Grab supplies", "Clean the streets", "Empty trash at warehouse"], trash.Tasks);
         Assert.Equal(5, trash.Payout);
@@ -262,34 +284,8 @@ public class CareerBalanceTests
 {
     private static readonly JobCatalog Catalog = TestJobs.RealCatalog();
 
-    // Fewest completed jobs, choosing freely among the jobs a character can take at each step, until
-    // the character qualifies for promotion to Tier 2. Breadth-first over (cash, lifetime XP) states.
-    private static int FewestJobsToTier2(SyndicatePlayer start, int maxJobs = 40)
-    {
-        var frontier = new HashSet<(float Cash, int TotalXp)> { (start.Cash, start.TotalXP) };
-        for (int jobs = 0; jobs <= maxJobs; jobs++)
-        {
-            if (frontier.Any(s => ProgressionManager.CanPromote(At(start, s)))) return jobs;
-
-            var next = new HashSet<(float, int)>();
-            foreach (var state in frontier)
-            {
-                var player = At(start, state);
-                foreach (var job in Catalog.All.Where(j => JobEligibility.IsEligible(player, j)))
-                    next.Add((state.Cash + job.Payout, state.TotalXp + job.XPReward));
-            }
-            frontier = next;
-        }
-        return int.MaxValue;
-    }
-
-    // Rebuilds the character at a given cash and lifetime XP (level follows from XP).
-    private static SyndicatePlayer At(SyndicatePlayer start, (float Cash, int TotalXp) state)
-    {
-        var player = new SyndicatePlayer(start.Name) { Cash = state.Cash, Tier = start.Tier };
-        player.AddXP(state.TotalXp);
-        return player;
-    }
+    // Fewest jobs to qualify for Worker. New jobs that open at Tier 2 or later cannot change this.
+    private static int FewestJobsToTier2(SyndicatePlayer start) => BalanceSearch.FewestJobsToPromotion(Catalog, start);
 
     // Exact, as documented in the README: a change to jobs or tiers that lengthens (or shortens) the
     // fastest route must update this test and the README together.
@@ -320,12 +316,12 @@ public class CareerBalanceTests
         var route = new[] { "trash_cleanup", "trash_cleanup", "grocery_delivery", "grocery_delivery" };
 
         int jobs = 0;
-        foreach (string job in route) { await PlayAsync(game, id, job); jobs++; }
+        foreach (string job in route) { await TestJobs.PlayJobAsync(game, id, job); jobs++; }
         Assert.Equal(2, (await game.GetOrCreatePlayerAsync(id)).Player!.Level);
 
         while (!ProgressionManager.CanPromote((await game.GetOrCreatePlayerAsync(id)).Player!))
         {
-            await PlayAsync(game, id, "warehouse_inventory");
+            await TestJobs.PlayJobAsync(game, id, "warehouse_inventory");
             jobs++;
             Assert.True(jobs <= 15, "took more than 15 jobs");
         }
@@ -334,13 +330,5 @@ public class CareerBalanceTests
         Assert.Equal(11, jobs);
         Assert.True((await game.PromoteAsync(id)).Result!.Success);
         Assert.Equal(2, (await game.GetOrCreatePlayerAsync(id)).Player!.Tier);
-    }
-
-    private static async Task PlayAsync(GameService game, string id, string jobId)
-    {
-        var accepted = await game.AcceptJobAsync(id, jobId);
-        Assert.True(accepted.Result!.Success, accepted.Result.Message);
-        GameActionOutcome last;
-        do last = await game.CompleteTaskAsync(id); while (last.Result!.Reward is null);
     }
 }
