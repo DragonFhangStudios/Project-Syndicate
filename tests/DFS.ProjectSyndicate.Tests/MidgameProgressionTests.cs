@@ -1,3 +1,4 @@
+using DFS.JobSystem.Core;
 using DFS.ProjectSyndicate.Careers;
 using DFS.ProjectSyndicate.Characters;
 using DFS.ProjectSyndicate.Jobs;
@@ -31,7 +32,7 @@ public class MidgameJobTests
     [Theory]
     [InlineData("night_freight_sorting", "Night Freight Sorting", 260, 40, 2, 5)]
     [InlineData("fleet_maintenance_crew", "Fleet Maintenance Crew", 340, 50, 3, 6)]
-    [InlineData("municipal_records_contract", "Municipal Records Contract", 420, 35, 3, 4)]
+    [InlineData("municipal_records_contract", "Municipal Records Contract", 420, 35, 3, 6)]
     [InlineData("logistics_dispatch_coordinator", "Logistics Dispatch Coordinator", 575, 55, 4, 7)]
     public void MidgameJobs_HaveTheirAuthorizedTerms(string id, string title, int pay, int xp, int minLevel, int tasks)
     {
@@ -55,12 +56,30 @@ public class MidgameJobTests
 
         // Freight: the first raise after promotion, trading a little XP for more pay than Night Security.
         Assert.True(freight.Payout > security.Payout && freight.XPReward < security.XPReward);
-        // Fleet: the most XP of any contract below level 4; Records: the most cash per task and the least XP.
+        // Fleet: the most XP of any contract below level 4; Records: the best pay at level 3, with the least XP.
         Assert.Equal(fleet, worker.Where(j => j.MinLevel < 4).MaxBy(j => j.XPReward));
-        Assert.Equal(records, worker.MaxBy(j => (double)j.Payout / j.Tasks.Count));
+        Assert.Equal(records, worker.Where(j => j.MinLevel <= 3).MaxBy(j => j.Payout));
         Assert.Equal(records, worker.MinBy(j => j.XPReward));
         // Dispatch: the top Worker contract, best on both pay and XP.
         Assert.All(worker.Where(j => j != dispatch), j => Assert.True(dispatch.Payout > j.Payout && dispatch.XPReward > j.XPReward));
+    }
+
+    private static double PayPerTask(Job job) => (double)job.Payout / job.Tasks.Count;
+    private static double XpPerTask(Job job) => (double)job.XPReward / job.Tasks.Count;
+
+    [Fact]
+    public void NoWorkerContract_LeadsOnBothPayAndXpPerTask()
+    {
+        // Rewards are paid per contract, but the board compares averages per task. If one contract led on
+        // both, there would be little reason to unlock the next; the top contract, Dispatch, leads on pay.
+        var worker = Catalog.All.Where(j => j.MinTier == 2).ToList();
+
+        var bestPay = worker.MaxBy(PayPerTask)!;
+        var bestXp = worker.MaxBy(XpPerTask)!;
+
+        Assert.NotEqual(bestPay, bestXp);
+        Assert.Equal("logistics_dispatch_coordinator", bestPay.Id);
+        Assert.Equal("fleet_maintenance_crew", bestXp.Id);
     }
 
     [Theory]

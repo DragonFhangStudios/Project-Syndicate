@@ -83,7 +83,7 @@ open to everyone). Requirements are only level and tier, which every character r
 no job is permanently out of reach. Eligibility is checked by the game rules when a job is accepted,
 not only by the UI.
 
-| Job | Unlocks at | Tasks | Pay | XP | Pay per task | XP per task | Role |
+| Job | Unlocks at | Tasks | Pay | XP | Avg pay per task | Avg XP per task | Role |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Street Trash Cleanup | — | 4 | $5 | 40 | $1 | 10 | Fastest XP, almost no pay |
 | Grocery Delivery Run | — | 3 | $50 | 20 | $17 | 6.7 | Short and balanced |
@@ -92,10 +92,12 @@ not only by the UI.
 | Night Security Patrol | Tier 2 (Worker) | 6 | $220 | 45 | $37 | 7.5 | Open the moment you're promoted |
 | Night Freight Sorting | Tier 2, Level 2 | 5 | $260 | 40 | $52 | 8 | First raise after promotion |
 | Fleet Maintenance Crew | Tier 2, Level 3 | 6 | $340 | 50 | $57 | 8.3 | Most XP per contract below level 4 |
-| Municipal Records Contract | Tier 2, Level 3 | 4 | $420 | 35 | $105 | 8.8 | Short, cash-heavy, lightest XP |
+| Municipal Records Contract | Tier 2, Level 3 | 6 | $420 | 35 | $70 | 5.8 | Best pay at level 3, lightest XP |
 | Logistics Dispatch Coordinator | Tier 2, Level 4 | 7 | $575 | 55 | $82 | 7.9 | Top Worker contract, best pay and XP |
 
-The job board shows the per-task figures (derived from each job's terms, not stored). Open jobs are
+Pay and XP are paid in full only when the whole contract is finished. The job board shows the average
+per task (derived from each job's terms, not stored) so jobs of different lengths compare fairly; no
+Worker contract leads on both averages, and Dispatch, the top contract, leads on pay. Open jobs are
 grouped by rank with the character's best rank first and the best-paid work first within it; locked
 jobs follow, nearest unlock first, with what each one still needs.
 

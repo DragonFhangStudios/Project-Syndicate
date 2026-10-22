@@ -38,9 +38,10 @@
         </div>
         @if (Job.Tasks.Count > 0)
         {
-            @* Derived from the job's own terms, so jobs of different lengths compare fairly. *@
+            @* Derived from the job's own terms, so jobs of different lengths compare fairly. Rewards are paid
+               only when the whole contract is done, so this is an average for comparison, not a payment. *@
             <div class="job-rate">
-                <dt>Per task</dt>
+                <dt>Avg per task</dt>
                 <dd class="tabular">
                     @Format.Money((float)Job.Payout / Job.Tasks.Count) · @Format.Rate((double)Job.XPReward / Job.Tasks.Count) XP
                 </dd>
