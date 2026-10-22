@@ -21,6 +21,98 @@
     gap: var(--ps-space-2);
 }
 
+.job-eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ps-space-2);
+}
+
+.job-lock {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--ps-border-strong);
+    border-radius: 999px;
+    color: var(--ps-text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.job-lock ::deep .icon {
+    width: 13px;
+    height: 13px;
+}
+
+.job-card.is-locked {
+    border-style: dashed;
+    background: var(--ps-bg);
+}
+
+.job-card.is-locked:hover,
+.job-card.is-locked:focus-within {
+    border-color: var(--ps-border-strong);
+    transform: none;
+}
+
+.job-card.is-locked .job-title,
+.job-card.is-locked .job-terms dd {
+    color: var(--ps-text-muted);
+}
+
+.job-reqs {
+    display: grid;
+    gap: var(--ps-space-2);
+}
+
+.job-reqs-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ps-text-muted);
+}
+
+.job-req-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ps-space-2);
+    padding: 0;
+    list-style: none;
+}
+
+.job-req {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border: 1px solid var(--ps-border-strong);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.job-req ::deep .icon {
+    width: 14px;
+    height: 14px;
+}
+
+.job-req.met {
+    border-color: rgba(87, 199, 147, 0.45);
+    background: var(--ps-success-wash);
+    color: var(--ps-success);
+}
+
+.job-req.unmet {
+    border-color: rgba(214, 178, 70, 0.45);
+    background: var(--ps-gold-wash);
+    color: var(--ps-gold);
+}
+
 .job-title {
     font-size: 1.25rem;
 }

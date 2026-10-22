@@ -75,3 +75,28 @@ character next saves; listing characters never rewrites a save.
 - `TotalXP` is lifetime XP and never goes down. Career tier requirements use it, so levelling up
   never takes a player further from promotion.
 - Promotion requires the tier's lifetime XP and cash on hand (requirement plus fee); the fee is deducted.
+
+## Civilian jobs
+
+Defined in `src/DFS.JobSystem/Data/SimpleJobs.json` (`MinLevel` / `MinTier` gate a job; 0 or 1 means
+open to everyone). Requirements are only level and tier, which every character raises by working, so
+no job is permanently out of reach. Eligibility is checked by the game rules when a job is accepted,
+not only by the UI.
+
+| Job | Unlocks at | Tasks | Pay | XP | Pay per task | XP per task | Role |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Street Trash Cleanup | — | 4 | $5 | 40 | $1 | 10 | Fastest XP, almost no pay |
+| Grocery Delivery Run | — | 3 | $50 | 20 | $17 | 7 | Short and balanced |
+| Diner Night Shift | — | 5 | $100 | 15 | $20 | 3 | Best early pay, slow XP |
+| Warehouse Inventory | Level 2 | 5 | $130 | 30 | $26 | 6 | Better on both once levelled |
+| Night Security Patrol | Tier 2 (Worker) | 6 | $220 | 45 | $37 | 7.5 | Post-promotion work |
+
+Balance against the existing tiers (Tier 2: 150 lifetime XP and $1,500 on hand, $500 fee):
+
+- A new character ($500) needs about $1,000 more. The fastest possible route is **10 jobs**
+  (for example ten Diner shifts, or seven Diner shifts then three Warehouse jobs); a natural mix of
+  two Trash Cleanups, two Grocery runs and then Warehouse work takes **11**. Repeating only Trash
+  Cleanup would take about 200, so variety is the point.
+- Demo characters start with more cash, so XP is their limit: Sonny and Giovanni qualify after 4
+  Trash Cleanups; Carlo ($1,200) now needs 5 jobs instead of about 60.
+- These numbers are checked by `CareerBalanceTests`, which searches every job sequence.

@@ -11,5 +11,62 @@
       "Clean the streets",
       "Empty trash at warehouse"
     ]
+  },
+  {
+    "Id": "grocery_delivery",
+    "Title": "Grocery Delivery Run",
+    "Description": "Run bags of groceries from the corner market to customers' doors before the ice cream melts.",
+    "Payout": 50,
+    "XPReward": 20,
+    "Tasks": [
+      "Pick up orders at the market",
+      "Load the delivery bike",
+      "Drop off at three apartments"
+    ]
+  },
+  {
+    "Id": "diner_night_shift",
+    "Title": "Diner Night Shift",
+    "Description": "Work the graveyard shift at an all-night diner. Long hours, steady tips.",
+    "Payout": 100,
+    "XPReward": 15,
+    "Tasks": [
+      "Clock in and set up the counter",
+      "Take orders from the late crowd",
+      "Run plates from the kitchen",
+      "Bus and wipe down tables",
+      "Close out the register"
+    ]
+  },
+  {
+    "Id": "warehouse_inventory",
+    "Title": "Warehouse Inventory",
+    "Description": "Count, label and restock shipments at the riverside distribution warehouse. Needs someone with a little experience.",
+    "Payout": 130,
+    "XPReward": 30,
+    "MinLevel": 2,
+    "Tasks": [
+      "Sign in with the shift supervisor",
+      "Unload the morning trucks",
+      "Scan and label every pallet",
+      "Restock the high shelves",
+      "Reconcile the count sheet"
+    ]
+  },
+  {
+    "Id": "night_security",
+    "Title": "Night Security Patrol",
+    "Description": "Guard an office tower through the night. The building manager only hires established Workers.",
+    "Payout": 220,
+    "XPReward": 45,
+    "MinTier": 2,
+    "Tasks": [
+      "Collect keys and radio at the front desk",
+      "Check every door on the lower floors",
+      "Walk the parking garage",
+      "Review the camera feeds",
+      "Patrol the roof access",
+      "Write up the shift report"
+    ]
   }
 ]
