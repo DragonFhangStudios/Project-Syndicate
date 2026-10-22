@@ -9,6 +9,26 @@
     white-space: nowrap;
 }
 
+.job-group + .job-group {
+    margin-top: var(--ps-space-3);
+}
+
+.job-group-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--ps-space-1) var(--ps-space-3);
+    padding-bottom: var(--ps-space-2);
+    border-bottom: 1px solid var(--ps-border);
+    font-size: 1.05rem;
+}
+
+.job-group-title .muted {
+    font-family: var(--ps-font-body);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
 .job-cta {
     display: grid;
     gap: var(--ps-space-2);

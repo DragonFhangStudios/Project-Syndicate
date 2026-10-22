@@ -1,5 +1,5 @@
 @* Job board listing: terms, requirements and the accept action. Locked jobs show what unlocks them. *@
-<article class="job-card @(IsLocked ? "is-locked" : null)" aria-labelledby="@HeadingId">
+<article class="job-card @(IsLocked ? "is-locked" : null) @(IsActive ? "is-active" : null)" aria-labelledby="@HeadingId">
     <div class="job-head">
         <div class="job-eyebrow">
             <p class="eyebrow eyebrow-crimson">Civilian contract</p>
@@ -7,8 +7,19 @@
             {
                 <span class="job-lock"><Icon Name="lock" /> Locked</span>
             }
+            else if (IsActive)
+            {
+                <span class="job-active"><Icon Name="briefcase" /> Active</span>
+            }
         </div>
-        <h3 id="@HeadingId" class="job-title">@Job.Title</h3>
+        @if (HeadingLevel == 4)
+        {
+            <h4 id="@HeadingId" class="job-title">@Job.Title</h4>
+        }
+        else
+        {
+            <h3 id="@HeadingId" class="job-title">@Job.Title</h3>
+        }
         <p class="muted">@Job.Description</p>
     </div>
 
@@ -25,6 +36,16 @@
             <dt>Tasks</dt>
             <dd class="tabular">@Job.Tasks.Count</dd>
         </div>
+        @if (Job.Tasks.Count > 0)
+        {
+            @* Derived from the job's own terms, so jobs of different lengths compare fairly. *@
+            <div class="job-rate">
+                <dt>Per task</dt>
+                <dd class="tabular">
+                    @Format.Money((float)Job.Payout / Job.Tasks.Count) · @Format.Rate((double)Job.XPReward / Job.Tasks.Count) XP
+                </dd>
+            </div>
+        }
     </dl>
 
     @if (Requirements.Count > 0)
@@ -47,9 +68,9 @@
     @if (OnAccept.HasDelegate)
     {
         <div class="job-actions">
-            <button type="button" class="btn btn-primary" disabled="@(!CanAccept || IsLocked || Busy)"
+            <button type="button" class="btn btn-primary" disabled="@(!CanAccept || IsLocked || IsActive || Busy)"
                     aria-describedby="@(Note is not null ? NoteId : null)" @onclick="OnAccept">
-                Accept contract
+                @(IsActive ? "In progress" : "Accept contract")
             </button>
             @if (Note is not null)
             {
@@ -66,12 +87,19 @@
     [Parameter] public string? DisabledReason { get; set; }
     [Parameter] public bool Busy { get; set; }
     [Parameter] public EventCallback OnAccept { get; set; }
+    // The character's current contract: shown as active, and its progress replaces the accept note.
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public int TasksDone { get; set; }
+    // 3 by default; 4 when the board groups cards under their own headings.
+    [Parameter] public int HeadingLevel { get; set; } = 3;
 
     private bool IsLocked => Requirements.Any(r => !r.Met);
 
     private string? Note => IsLocked
         ? "Unlocks at " + string.Join(" and ", Requirements.Where(r => !r.Met).Select(r => r.Label)) + "."
-        : DisabledReason;
+        : IsActive
+            ? $"Your active contract: {TasksDone} of {Job.Tasks.Count} tasks done."
+            : DisabledReason;
 
     private string HeadingId => "job-" + Job.Id;
     private string NoteId => "job-note-" + Job.Id;

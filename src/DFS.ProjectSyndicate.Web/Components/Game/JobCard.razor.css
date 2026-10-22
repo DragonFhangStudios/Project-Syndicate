@@ -48,6 +48,31 @@
     height: 13px;
 }
 
+.job-active {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.55rem;
+    border: 1px solid rgba(216, 30, 44, 0.55);
+    border-radius: 999px;
+    background: var(--ps-crimson-wash);
+    color: var(--ps-crimson-text);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.job-active ::deep .icon {
+    width: 13px;
+    height: 13px;
+}
+
+.job-card.is-active {
+    border-color: rgba(216, 30, 44, 0.55);
+    background: linear-gradient(180deg, var(--ps-crimson-wash), transparent 55%), var(--ps-surface);
+}
+
 .job-card.is-locked {
     border-style: dashed;
     background: var(--ps-bg);
@@ -142,6 +167,10 @@
     font-family: var(--ps-font-display);
     font-size: 1.2rem;
     font-weight: 600;
+}
+
+.job-terms .job-rate dd {
+    color: var(--ps-text-muted);
 }
 
 .job-actions {

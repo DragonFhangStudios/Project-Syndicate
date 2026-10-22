@@ -85,7 +85,7 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4 {
     margin: 0;
     font-family: var(--ps-font-display);
     font-weight: 600;
