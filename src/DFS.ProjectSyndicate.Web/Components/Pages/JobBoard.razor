@@ -1,12 +1,13 @@
 @page "/play/{CharacterId}/jobs"
 @inject IJobCatalog Jobs
+@inject CareerService Careers
 @inject PlayerState State
 
 <PageTitle>Job board · Project Syndicate</PageTitle>
 
 <PlayerGate CharacterId="@CharacterId" Context="player">
     @{
-        var activeJob = Jobs.Find(player.JobData.AssignedJobId);
+        var activeJob = Careers.ActiveJob(player);
         int done = player.JobData.CurrentTaskIndex;
     }
     <div class="page">
@@ -31,7 +32,7 @@
             </Notice>
         }
 
-        @if (activeJob is not null && done < activeJob.Tasks.Count)
+        @if (activeJob is not null)
         {
             <Panel Eyebrow="Active contract" Title="@activeJob.Title" Variant="accent">
                 <Actions>

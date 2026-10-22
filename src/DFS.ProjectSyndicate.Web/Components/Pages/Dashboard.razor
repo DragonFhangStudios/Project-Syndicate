@@ -1,12 +1,12 @@
 @page "/play/{CharacterId}"
-@inject IJobCatalog Jobs
+@inject CareerService Careers
 @inject PlayerState State
 
 <PageTitle>Dashboard · Project Syndicate</PageTitle>
 
 <PlayerGate CharacterId="@CharacterId" Context="player">
     @{
-        var activeJob = Jobs.Find(player.JobData.AssignedJobId);
+        var activeJob = Careers.ActiveJob(player);
         var promotion = PromotionProgress.For(player);
     }
     <div class="page">
