@@ -86,17 +86,89 @@ not only by the UI.
 | Job | Unlocks at | Tasks | Pay | XP | Pay per task | XP per task | Role |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Street Trash Cleanup | — | 4 | $5 | 40 | $1 | 10 | Fastest XP, almost no pay |
-| Grocery Delivery Run | — | 3 | $50 | 20 | $17 | 7 | Short and balanced |
+| Grocery Delivery Run | — | 3 | $50 | 20 | $17 | 6.7 | Short and balanced |
 | Diner Night Shift | — | 5 | $100 | 15 | $20 | 3 | Best early pay, slow XP |
 | Warehouse Inventory | Level 2 | 5 | $130 | 30 | $26 | 6 | Better on both once levelled |
-| Night Security Patrol | Tier 2 (Worker) | 6 | $220 | 45 | $37 | 7.5 | Post-promotion work |
+| Night Security Patrol | Tier 2 (Worker) | 6 | $220 | 45 | $37 | 7.5 | Open the moment you're promoted |
+| Night Freight Sorting | Tier 2, Level 2 | 5 | $260 | 40 | $52 | 8 | First raise after promotion |
+| Fleet Maintenance Crew | Tier 2, Level 3 | 6 | $340 | 50 | $57 | 8.3 | Most XP per contract below level 4 |
+| Municipal Records Contract | Tier 2, Level 3 | 4 | $420 | 35 | $105 | 8.8 | Short, cash-heavy, lightest XP |
+| Logistics Dispatch Coordinator | Tier 2, Level 4 | 7 | $575 | 55 | $82 | 7.9 | Top Worker contract, best pay and XP |
 
-Balance against the existing tiers (Tier 2: 150 lifetime XP and $1,500 on hand, $500 fee):
+The job board shows the per-task figures (derived from each job's terms, not stored). Open jobs are
+grouped by rank with the character's best rank first and the best-paid work first within it; locked
+jobs follow, nearest unlock first, with what each one still needs.
+
+Job data is checked when the web game starts. Ids must be unique lowercase words joined by underscores
+(`night_security`), at most 64 characters, and every job needs a title and at least one named task.
+A duplicate id, a missing or malformed id, an empty entry or invalid JSON stops the game with an error
+naming the id and entry number, instead of silently dropping a job.
+
+### Tier 1 → Tier 2 (Worker)
+
+Tier 2 needs 150 lifetime XP and $1,500 on hand ($1,000 plus the $500 fee).
 
 - A new character ($500) needs about $1,000 more. The fastest possible route is **10 jobs**
   (for example ten Diner shifts, or seven Diner shifts then three Warehouse jobs); a natural mix of
   two Trash Cleanups, two Grocery runs and then Warehouse work takes **11**. Repeating only Trash
   Cleanup would take about 200, so variety is the point.
 - Demo characters start with more cash, so XP is their limit: Sonny and Giovanni qualify after 4
-  Trash Cleanups; Carlo ($1,200) now needs 5 jobs instead of about 60.
-- These numbers are checked by `CareerBalanceTests`, which searches every job sequence.
+  Trash Cleanups; Carlo ($1,200) needs 5 jobs.
+- The Worker contracts all need Tier 2, so they do not change these numbers.
+
+### Tier 2 (Worker) → Tier 3 (Professional)
+
+Tier 3 needs 400 lifetime XP and $7,000 on hand ($5,000 plus the $2,000 fee). Workers have far more
+than 400 XP long before they have the cash, so **cash is the limit**; XP decides which contracts are
+open (level 3 opens Fleet Maintenance and Municipal Records, level 4 opens Dispatch).
+
+Worker contracts needed after promotion, played through the game rules:
+
+| Strategy | After the natural route ($1,020, 330 XP, level 3) | After the fastest route ($1,000, 150 XP, level 2) |
+| --- | --- | --- |
+| Fewest possible | 13 | 15 |
+| Cash-focused (best pay on offer) | 13 | 16 |
+| XP-focused (most XP on offer) | 13 | 16 |
+| Rotating through every Worker contract | 18 | 20 |
+| Night Security only (before Phase 4) | 28 | 28 |
+
+The design target is roughly 12–20 contracts for a reasonable strategy. A cash-focused Worker climbs
+the ladder: Freight until level 3, Records until level 4, then Dispatch.
+
+These numbers are checked by `CareerBalanceTests` and `Tier3BalanceTests`. The fewest-jobs search
+covers every job sequence but keeps only the states not beaten on both cash and XP, so it stays fast
+as jobs are added. Changing a job or a tier that moves a number means updating the test and this
+README together.
+
+## Prototype limitations
+
+Deliberately kept for now:
+
+- **Local demo only.** There is no sign-in: anyone who can reach the app can play any character by
+  its URL. It listens on localhost; do not host it publicly.
+- **Civilian path only.** `CareerPath` is always `Civilian`; Criminal and Emergency Services careers
+  are not started.
+- **No content for Tier 3 and above.** Professionals, Executives and Business Tycoons can promote but
+  have no jobs of their own yet; they keep access to every civilian job.
+- **The WPF app ignores job requirements.** It lists and accepts every job, including the level- and
+  tier-gated ones, and does not run the web game's job data checks. It still loads all nine jobs.
+- **Jobs are instant.** No timers, energy, failure chance, items or other currencies.
+- A job is worked one task per click; the per-task figures are a comparison aid, not a time cost.
+
+## Tests
+
+`tests/DFS.ProjectSyndicate.Tests` (xUnit) covers the game library:
+
+- **Rules:** progression and levelling, promotion and fees (`ProgressionTests`, `PromotionProgressTests`),
+  job acceptance and task order (`CareerServiceTests`), eligibility and unlock thresholds
+  (`JobEligibilityTests`, `MidgameJobTests`), and every job played start to finish (`CivilianLoopTests`).
+- **Job data:** the shipped catalog, the original five jobs' terms, and rejection of duplicate,
+  missing and malformed ids and malformed files (`JobCatalogDataTests`).
+- **Balance:** the Tier 2 and Tier 3 numbers above (`CareerBalanceTests`, `Tier3BalanceTests`).
+- **Persistence and sessions:** saving and loading, version 1–3 saves, corrupt saves left untouched,
+  restarts, concurrent and stale sessions, removed or out-of-range active jobs, character creation
+  (`JsonFilePlayerRepositoryTests`, `GameServiceTests`, `GameActionTests`, `CharacterCreationTests`,
+  `CivilianLoopTests`).
+- **WPF compatibility:** the WPF loading path reads the same nine jobs (`CivilianLoopTests`).
+
+The Blazor pages have no automated UI tests; check them in a browser after UI changes.
