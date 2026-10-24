@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DFS.JobSystem.Core;
 using DFS.ProjectSyndicate.Careers;
 using DFS.ProjectSyndicate.Characters;
@@ -52,7 +53,10 @@ public class JobCatalogDataTests
     public void Jobs_AreDistinct_AndValid()
     {
         Assert.All(_catalog.All, job => Assert.Null(JobCatalog.Validate(job)));
-        Assert.Equal(_catalog.All.Count, _catalog.All.Select(j => j.Id).Distinct().Count());
+        // Checked on the file itself: the catalog's list can't show a duplicate, because JobManager keeps only the first.
+        // Case-insensitive, so ids can't differ by case alone either.
+        var rawIds = ShippedDefinitions().Select(j => j!.Id).ToList();
+        Assert.Equal(rawIds.Count, rawIds.Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.Equal(_catalog.All.Count, _catalog.All.Select(j => j.Description).Distinct().Count());
         Assert.Equal(_catalog.All.Count, _catalog.All.Select(j => (j.Payout, j.XPReward)).Distinct().Count());
     }
@@ -157,19 +161,56 @@ public class JobCatalogDataTests
         Assert.Contains("lowercase", error.Message);
     }
 
-    [Fact]
-    public void OverlongId_IsRejected()
-    {
-        string id = string.Join("_", Enumerable.Repeat("night", 20));
+    private static Job JobWithId(string id) =>
+        new() { Id = id, Title = "A job", Payout = 10, XPReward = 5, Tasks = ["Do the work"] };
 
-        Assert.Contains("lowercase", LoadFails($"[ {JobJson($"\"Id\": \"{id}\",")} ]").Message);
+    // In .NET, a regex ending in $ also matches before a final "\n", so "trash_cleanup\n" used to pass.
+    [Theory]
+    [InlineData("trash_cleanup\\n")]        // the JSON escapes for a trailing newline
+    [InlineData("trash_cleanup\\u000a")]
+    [InlineData("trash_cleanup\\r\\n")]
+    public void IdEndingInALineBreak_IsRejected(string jsonEscapedId)
+    {
+        var error = LoadFails($"[ {JobJson($"\"Id\": \"{jsonEscapedId}\",")} ]");
+
+        Assert.Contains("(entry 1): id must be lowercase letters and digits", error.Message);
+    }
+
+    [Theory]
+    [InlineData("night_security\n")]
+    [InlineData("night_security\r\n")]
+    [InlineData("\nnight_security")]
+    [InlineData("night\n_security")]
+    public void Validate_RejectsIdsContainingLineBreaks(string id)
+    {
+        Assert.Contains("lowercase", JobCatalog.Validate(JobWithId(id)));
+    }
+
+    [Fact]
+    public void IdLengthLimit_Is64Characters_AndTheErrorSaysSo()
+    {
+        Assert.Null(JobCatalog.Validate(JobWithId(new string('a', 64))));
+
+        string tooLong = new('a', 65);
+        var error = LoadFails($"[ {JobJson($"\"Id\": \"{tooLong}\",")} ]");
+
+        Assert.Contains("id is 65 characters long; ids can be at most 64 characters", error.Message);
+        Assert.DoesNotContain("lowercase", error.Message);
+    }
+
+    [Fact]
+    public void OverlongSnakeCaseId_IsRejected_ForItsLength()
+    {
+        string id = string.Join("_", Enumerable.Repeat("night", 20)); // well-formed, 119 characters
+
+        Assert.Contains("id is 119 characters long", LoadFails($"[ {JobJson($"\"Id\": \"{id}\",")} ]").Message);
     }
 
     [Theory]
     [InlineData("[ null ]", "entry 1 is empty")]
     [InlineData("[]", "no jobs")]
     [InlineData("null", "null instead of a list")]
-    [InlineData("[ { \"Id\": \"no_tasks\", \"Title\": \"No tasks\", \"Tasks\": null } ]", "task")]
+    [InlineData("[ { \"Id\": \"null_steps\", \"Title\": \"Null steps\", \"Tasks\": null } ]", "job 'null_steps' (entry 1): needs at least one named task")]
     [InlineData("[ { \"Id\": \"half_written\", ", "not valid JSON")]
     [InlineData("{ \"Id\": \"not_a_list\" }", "not valid JSON")]
     public void MalformedFile_IsRejected_WithADescription(string json, string expected)
@@ -177,10 +218,17 @@ public class JobCatalogDataTests
         Assert.Contains(expected, LoadFails(json).Message);
     }
 
+    // The shipped file as written, read the way JobLoader reads it, before JobManager can drop anything.
+    private static List<Job?> ShippedDefinitions() =>
+        JsonSerializer.Deserialize<List<Job?>>(File.ReadAllText(JobCatalog.DefaultPath))!;
+
     [Fact]
-    public void ValidateAll_AcceptsTheShippedCatalog()
+    public void ShippedFile_PassesRawValidation_AndEveryEntryReachesTheCatalog()
     {
-        Assert.Null(JobCatalog.ValidateAll(_catalog.All));
+        var raw = ShippedDefinitions();
+
+        Assert.Null(JobCatalog.ValidateAll(raw));
+        Assert.Equal(raw.Select(j => j!.Id), _catalog.All.Select(j => j.Id));
     }
 }
 

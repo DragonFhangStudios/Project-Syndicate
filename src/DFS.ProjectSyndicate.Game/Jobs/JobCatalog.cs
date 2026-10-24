@@ -14,8 +14,9 @@ namespace DFS.ProjectSyndicate.Jobs
 	// Job definitions loaded once from DFS.JobSystem's SimpleJobs.json.
 	public sealed class JobCatalog : IJobCatalog
 	{
-		// Lowercase words joined by underscores, e.g. "night_security". Ids are stored in saves and used in page markup.
-		private static readonly Regex IdPattern = new("^[a-z0-9]+(_[a-z0-9]+)*$", RegexOptions.CultureInvariant);
+		// Groups of lowercase letters and digits joined by single underscores, e.g. "night_security". Ids are stored in
+		// saves and used in page markup. \z, not $: in .NET, $ also matches before a final newline.
+		private static readonly Regex IdPattern = new(@"\A[a-z0-9]+(_[a-z0-9]+)*\z", RegexOptions.CultureInvariant);
 		private const int MaxIdLength = 64;
 
 		private readonly JobManager _manager = new();
@@ -42,7 +43,9 @@ namespace DFS.ProjectSyndicate.Jobs
 		public static string? Validate(Job job)
 		{
 			if (string.IsNullOrWhiteSpace(job.Id)) return "missing id";
-			if (job.Id.Length > MaxIdLength || !IdPattern.IsMatch(job.Id))
+			if (job.Id.Length > MaxIdLength)
+				return $"id is {job.Id.Length} characters long; ids can be at most {MaxIdLength} characters";
+			if (!IdPattern.IsMatch(job.Id))
 				return "id must be lowercase letters and digits joined by underscores, e.g. \"night_security\"";
 			if (string.IsNullOrWhiteSpace(job.Title)) return "missing title";
 			if (job.Tasks is null || job.Tasks.Count == 0 || job.Tasks.Any(string.IsNullOrWhiteSpace)) return "needs at least one named task";

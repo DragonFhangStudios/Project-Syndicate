@@ -296,6 +296,10 @@ public class CivilianLoopTests : IDisposable
         JobLoader.LoadAndRegisterJobs(manager, JobCatalog.DefaultPath);
 
         var wpf = manager.GetAllJobs().ToList();
+        Assert.Equal(
+            ["trash_cleanup", "grocery_delivery", "diner_night_shift", "warehouse_inventory", "night_security",
+             "night_freight_sorting", "fleet_maintenance_crew", "municipal_records_contract", "logistics_dispatch_coordinator"],
+            wpf.Select(j => j.Id));
         Assert.Equal(Catalog.All.Select(Terms), wpf.Select(Terms));
     }
 

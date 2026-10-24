@@ -101,10 +101,19 @@ Worker contract leads on both averages, and Dispatch, the top contract, leads on
 grouped by rank with the character's best rank first and the best-paid work first within it; locked
 jobs follow, nearest unlock first, with what each one still needs.
 
-Job data is checked when the web game starts. Ids must be unique lowercase words joined by underscores
-(`night_security`), at most 64 characters, and every job needs a title and at least one named task.
-A duplicate id, a missing or malformed id, an empty entry or invalid JSON stops the game with an error
-naming the id and entry number, instead of silently dropping a job.
+Job data is checked when the web game starts, and any problem stops it with an error instead of
+silently dropping a job.
+
+- **Ids** are unique groups of lowercase letters (`a`–`z`) and digits (`0`–`9`) joined by single
+  underscores, at most 64 characters: `night_security` or `route_2`. Capitals, spaces, hyphens,
+  accented letters, line breaks and leading, trailing or doubled underscores are rejected.
+- Every job also needs a title, at least one named task, pay and XP of zero or more, and level and
+  tier requirements of zero or more, with the tier no higher than the top tier.
+- **A problem with one entry** (an empty entry, a duplicate, missing or malformed id, a missing title or
+  tasks) is reported with its entry number in the file, counting from 1, and its id when it has one.
+- **A file that can't be read as a list of jobs** (invalid JSON, a single object instead of a list,
+  `null` or an empty list) is reported for the file as a whole: for invalid JSON the message carries
+  the parser's description of where reading failed, since no job can be identified.
 
 ### Tier 1 → Tier 2 (Worker)
 
