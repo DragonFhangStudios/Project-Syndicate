@@ -37,6 +37,44 @@
     font-weight: 600;
 }
 
+.promo-req {
+    display: grid;
+    gap: var(--ps-space-1);
+}
+
+.promo-status {
+    font-size: 0.88rem;
+    color: var(--ps-gold);
+}
+
+.promo-status.met {
+    color: var(--ps-success);
+}
+
+.promo-ready {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    justify-self: start;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid rgba(87, 199, 147, 0.45);
+    border-radius: var(--ps-radius);
+    background: var(--ps-success-wash);
+    color: var(--ps-success);
+    font-weight: 700;
+}
+
+.promo-ready.promo-top {
+    border-color: rgba(214, 178, 70, 0.45);
+    background: var(--ps-gold-wash);
+    color: var(--ps-gold);
+}
+
+.promo-ready ::deep .icon {
+    width: 16px;
+    height: 16px;
+}
+
 @media (max-width: 480px) {
     .identity {
         align-items: flex-start;

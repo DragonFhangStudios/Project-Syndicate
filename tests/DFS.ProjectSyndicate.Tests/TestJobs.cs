@@ -23,4 +23,20 @@ public static class TestJobs
 
     public static GameService CreateGame(IPlayerRepository repository, IJobCatalog? jobs = null) =>
         new(repository, new CareerService(jobs ?? RealCatalog()));
+
+    // Accepts a job and completes every task through the game service, as the web game does.
+    public static async Task<JobReward> PlayJobAsync(GameService game, string characterId, string jobId)
+    {
+        var accepted = await game.AcceptJobAsync(characterId, jobId);
+        Assert.True(accepted.Result!.Success, accepted.Result.Message);
+
+        GameActionOutcome last;
+        do
+        {
+            last = await game.CompleteTaskAsync(characterId);
+            Assert.True(last.Result!.Success, last.Result.Message);
+        }
+        while (last.Result.Reward is null);
+        return last.Result.Reward;
+    }
 }

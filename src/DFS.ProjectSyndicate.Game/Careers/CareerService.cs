@@ -1,3 +1,4 @@
+using DFS.JobSystem.Core;
 using DFS.ProjectSyndicate.Jobs;
 using DFS.ProjectSyndicate.Managers;
 using DFS.ProjectSyndicate.Models;
@@ -22,10 +23,19 @@ namespace DFS.ProjectSyndicate.Careers
 			_jobs = jobs;
 		}
 
+		// The character's job in progress, or null. An assignment that can't be worked (the job is no longer in
+		// the catalog, or the saved progress is outside its task list, e.g. after the job data changed) is
+		// treated as no job: it never pays, and it never blocks taking new work.
+		public Job? ActiveJob(SyndicatePlayer player)
+		{
+			var job = _jobs.Find(player.JobData.AssignedJobId);
+			int index = player.JobData.CurrentTaskIndex;
+			return job is not null && index >= 0 && index < job.Tasks.Count ? job : null;
+		}
+
 		public CareerResult AcceptJob(SyndicatePlayer player, string jobId)
 		{
-			// A job id that is no longer in the catalog does not block taking new work.
-			if (_jobs.Find(player.JobData.AssignedJobId) is not null)
+			if (ActiveJob(player) is not null)
 				return CareerResult.Fail("Finish your current job before taking another.");
 
 			var job = _jobs.Find(jobId);

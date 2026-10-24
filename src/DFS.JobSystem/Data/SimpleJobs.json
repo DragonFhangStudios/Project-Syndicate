@@ -68,5 +68,73 @@
       "Patrol the roof access",
       "Write up the shift report"
     ]
+  },
+  {
+    "Id": "night_freight_sorting",
+    "Title": "Night Freight Sorting",
+    "Description": "Work the overnight sort at the rail-side freight terminal, moving parcels off the late trains and onto the morning trucks. The terminal foreman only takes Workers with a few shifts behind them.",
+    "Payout": 260,
+    "XPReward": 40,
+    "MinLevel": 2,
+    "MinTier": 2,
+    "Tasks": [
+      "Badge in at the terminal gate",
+      "Unload the cages from the late freight",
+      "Sort parcels by route on the conveyor",
+      "Re-tape and tag the damaged boxes",
+      "Stage the outbound pallets for the dawn trucks"
+    ]
+  },
+  {
+    "Id": "fleet_maintenance_crew",
+    "Title": "Fleet Maintenance Crew",
+    "Description": "Join the night crew at the municipal garage, keeping the city's buses and delivery vans on the road. Greasy, skilled work, and the foreman won't hand you a wrench until you've proven yourself.",
+    "Payout": 340,
+    "XPReward": 50,
+    "MinLevel": 3,
+    "MinTier": 2,
+    "Tasks": [
+      "Pull tonight's work orders from the foreman's board",
+      "Drain and change the oil on the bus line",
+      "Rotate the tires on the delivery vans",
+      "Replace the worn brake pads",
+      "Road-test the repaired vehicles around the yard",
+      "Log every repair in the maintenance book"
+    ]
+  },
+  {
+    "Id": "municipal_records_contract",
+    "Title": "Municipal Records Contract",
+    "Description": "City Hall is buried in paperwork. Spend a shift in the records basement sorting permits and scanning property deeds. Quiet, careful work that pays well, if the clerk trusts you with the files.",
+    "Payout": 420,
+    "XPReward": 35,
+    "MinLevel": 3,
+    "MinTier": 2,
+    "Tasks": [
+      "Sign out the archive keys from the clerk",
+      "Haul the permit boxes up from the basement stacks",
+      "Sort a decade of building permits by district",
+      "Scan and index the property deeds",
+      "Flag the water-damaged files for restoration",
+      "Return the boxes and file the shift log"
+    ]
+  },
+  {
+    "Id": "logistics_dispatch_coordinator",
+    "Title": "Logistics Dispatch Coordinator",
+    "Description": "Run the night desk at a regional trucking office, matching drivers, loads and routes across the whole city. The best contract a Worker can hold, and one step from a Professional's desk.",
+    "Payout": 575,
+    "XPReward": 55,
+    "MinLevel": 4,
+    "MinTier": 2,
+    "Tasks": [
+      "Take over the desk from the evening dispatcher",
+      "Review the overnight load manifests",
+      "Assign a driver to every route",
+      "Reroute trucks around the bridge closure",
+      "Talk a stranded driver through a breakdown",
+      "Confirm deliveries with the warehouse leads",
+      "Hand the morning shift a clean board"
+    ]
   }
 ]

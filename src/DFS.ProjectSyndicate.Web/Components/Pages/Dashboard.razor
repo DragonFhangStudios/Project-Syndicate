@@ -1,14 +1,13 @@
 @page "/play/{CharacterId}"
-@inject IJobCatalog Jobs
+@inject CareerService Careers
 @inject PlayerState State
 
 <PageTitle>Dashboard · Project Syndicate</PageTitle>
 
 <PlayerGate CharacterId="@CharacterId" Context="player">
     @{
-        var activeJob = Jobs.Find(player.JobData.AssignedJobId);
-        var nextTier = ProgressionManager.GetNextTierRequirement(player);
-        bool canPromote = ProgressionManager.CanPromote(player);
+        var activeJob = Careers.ActiveJob(player);
+        var promotion = PromotionProgress.For(player);
     }
     <div class="page">
         <header class="page-header">
@@ -84,28 +83,49 @@
             </Panel>
 
             <Panel Eyebrow="Career" Title="Advancement" Variant="gold">
-                @if (nextTier is not null)
+                @if (promotion is not null)
                 {
-                    <p>Next rank: <strong class="text-gold">Tier @nextTier.TierLevel · @nextTier.TierName</strong></p>
-                    <ProgressMeter Label="Lifetime XP" Tone="gold" Value="player.TotalXP" Max="nextTier.XPNeeded"
-                                   ValueText="@($"{Format.Number(player.TotalXP)} / {Format.Number(nextTier.XPNeeded)} XP")" />
-                    <ProgressMeter Label="Cash on hand" Tone="gold" Value="player.Cash" Max="nextTier.CashNeeded + nextTier.PromotionCost"
-                                   ValueText="@($"{Format.Money(player.Cash)} / {Format.Money(nextTier.CashNeeded + nextTier.PromotionCost)}")" />
-                    <p class="muted">You need @Format.Money(nextTier.CashNeeded) on hand plus the @Format.Money(nextTier.PromotionCost) promotion fee, which is deducted.</p>
+                    var next = promotion.Next;
+                    <p>Next rank: <strong class="text-gold">Tier @next.TierLevel · @next.TierName</strong></p>
+                    @if (promotion.CanPromote)
+                    {
+                        <p class="promo-ready"><Icon Name="check" /> Ready for promotion to @next.TierName</p>
+                    }
+                    <div class="promo-req">
+                        <ProgressMeter Label="Lifetime XP" Tone="gold" Value="player.TotalXP" Max="next.XPNeeded"
+                                       ValueText="@($"{Format.Number(player.TotalXP)} / {Format.Number(next.XPNeeded)} XP")" />
+                        <p class="promo-status @(promotion.XpMet ? "met" : null)">
+                            @(promotion.XpMet ? "Lifetime XP requirement met." : $"{Format.Number(promotion.XpRemaining)} more lifetime XP needed.")
+                        </p>
+                    </div>
+                    <div class="promo-req">
+                        <ProgressMeter Label="Cash on hand" Tone="gold" Value="player.Cash" Max="promotion.CashOnHandNeeded"
+                                       ValueText="@($"{Format.Money(player.Cash)} / {Format.Money(promotion.CashOnHandNeeded)}")" />
+                        <p class="promo-status @(promotion.CashMet ? "met" : null)">
+                            @(promotion.CashMet ? "Cash requirement met." : $"{Format.Money(promotion.CashRemaining)} more cash needed.")
+                        </p>
+                    </div>
+                    <p class="muted">
+                        You need @Format.Money(next.CashNeeded) on hand plus the @Format.Money(next.PromotionCost) promotion fee.
+                        The fee is deducted when you're promoted@(promotion.CanPromote ? $", leaving you {Format.Money(promotion.CashAfterPromotion)}" : "").
+                    </p>
                     <div>
-                        <button type="button" class="btn btn-gold" disabled="@(!canPromote || State.Busy)"
+                        <button type="button" class="btn btn-gold" disabled="@(!promotion.CanPromote || State.Busy)"
                                 aria-describedby="promotion-note" @onclick="PromoteAsync">
                             <Icon Name="star" />
-                            Apply for promotion
+                            @(promotion.CanPromote ? $"Get promoted to {next.TierName}" : "Apply for promotion")
                         </button>
                     </div>
                     <p id="promotion-note" class="muted">
-                        @(canPromote ? $"You qualify for {nextTier.TierName}." : "Requirements not met yet.")
+                        @(promotion.CanPromote
+                            ? $"You qualify for {next.TierName}. Promotion costs {Format.Money(next.PromotionCost)}."
+                            : "Not yet: " + string.Join(" and ", MissingForPromotion(promotion)) + ".")
                     </p>
                 }
                 else
                 {
-                    <p class="text-gold">You've reached the top civilian rank.</p>
+                    <p class="promo-ready promo-top"><Icon Name="star" /> @ProgressionManager.GetTierName(player.Tier)</p>
+                    <p>You've reached the top civilian rank. There are no further promotions.</p>
                 }
             </Panel>
         </div>
@@ -116,6 +136,12 @@
     [Parameter] public string CharacterId { get; set; } = string.Empty;
 
     private string? _promotionMessage;
+
+    private static IEnumerable<string> MissingForPromotion(PromotionProgress promotion)
+    {
+        if (!promotion.XpMet) yield return $"{Format.Number(promotion.XpRemaining)} more lifetime XP";
+        if (!promotion.CashMet) yield return $"{Format.Money(promotion.CashRemaining)} more cash";
+    }
 
     private async Task PromoteAsync()
     {
