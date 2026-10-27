@@ -15,11 +15,13 @@ public class JobCatalogDataTests
     private readonly JobCatalog _catalog = TestJobs.RealCatalog();
 
     [Fact]
-    public void ShipsNineJobs_TheOriginalFiveFirst()
+    public void ShipsThirteenJobs_InTheOrderTheyWereAdded()
     {
+        // Phase 3's five, Phase 4's four Worker contracts, Phase 5's four Professional contracts.
         Assert.Equal(
             ["trash_cleanup", "grocery_delivery", "diner_night_shift", "warehouse_inventory", "night_security",
-             "night_freight_sorting", "fleet_maintenance_crew", "municipal_records_contract", "logistics_dispatch_coordinator"],
+             "night_freight_sorting", "fleet_maintenance_crew", "municipal_records_contract", "logistics_dispatch_coordinator",
+             "commercial_property_inspector", "hospital_supply_coordinator", "port_customs_broker", "city_contracts_manager"],
             _catalog.All.Select(j => j.Id));
     }
 
