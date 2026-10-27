@@ -109,4 +109,14 @@ public static class Strategies
 
     // The only Worker contract before Phase 4, repeated.
     public static readonly Strategy NightSecurityOnly = (open, _) => open.Single(j => j.Id == "night_security");
+
+    // A Professional trying every Professional contract open to them in turn, in board order.
+    public static readonly Strategy ProfessionalRotation = (open, jobsPlayed) =>
+    {
+        var contracts = open.Where(j => j.MinTier == 3).ToList();
+        return contracts[jobsPlayed % contracts.Count];
+    };
+
+    // The best contract before Phase 5, repeated.
+    public static readonly Strategy DispatchOnly = (open, _) => open.Single(j => j.Id == "logistics_dispatch_coordinator");
 }

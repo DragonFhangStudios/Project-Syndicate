@@ -23,7 +23,7 @@ public class CivilianLoopTests : IDisposable
 
     public static TheoryData<string> AllJobIds() => new(TestJobs.RealCatalog().All.Select(j => j.Id));
 
-    // Level 4 Worker: every job on the board is open to them.
+    // Level 4 Worker: every job up to and including the Worker contracts is open to them.
     private static SyndicatePlayer SeasonedWorker()
     {
         var player = NewCharacters.Create("char-0000000000aa", "Vinnie", DateTime.UtcNow);
@@ -49,7 +49,10 @@ public class CivilianLoopTests : IDisposable
     public void EveryJob_RunsItsTasksInOrder_AndPaysItsTermsExactlyOnce(string jobId)
     {
         var job = Catalog.Find(jobId)!;
+        // A level 6 Professional, so every job on the board is open.
         var player = SeasonedWorker();
+        player.AddXP(1500 - player.TotalXP);
+        player.Tier = 3;
         var before = (player.Cash, player.TotalXP, player.JobData.JobsCompleted, player.JobData.TotalEarned);
 
         var accepted = _careers.AcceptJob(player, jobId);
@@ -289,7 +292,7 @@ public class CivilianLoopTests : IDisposable
     }
 
     [Fact]
-    public void WpfLoadingPath_ReadsAllNineJobs_WithTheSameTerms()
+    public void WpfLoadingPath_ReadsAllThirteenJobs_WithTheSameTerms()
     {
         // The WPF app loads jobs through JobLoader into its own JobManager, without JobCatalog's checks.
         var manager = new JobManager();
@@ -298,7 +301,8 @@ public class CivilianLoopTests : IDisposable
         var wpf = manager.GetAllJobs().ToList();
         Assert.Equal(
             ["trash_cleanup", "grocery_delivery", "diner_night_shift", "warehouse_inventory", "night_security",
-             "night_freight_sorting", "fleet_maintenance_crew", "municipal_records_contract", "logistics_dispatch_coordinator"],
+             "night_freight_sorting", "fleet_maintenance_crew", "municipal_records_contract", "logistics_dispatch_coordinator",
+             "commercial_property_inspector", "hospital_supply_coordinator", "port_customs_broker", "city_contracts_manager"],
             wpf.Select(j => j.Id));
         Assert.Equal(Catalog.All.Select(Terms), wpf.Select(Terms));
     }

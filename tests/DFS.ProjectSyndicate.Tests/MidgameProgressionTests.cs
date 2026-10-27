@@ -139,12 +139,14 @@ public class MidgameJobTests
     }
 
     [Fact]
-    public void HigherTiers_KeepAccessToEveryJob()
+    public void HigherTiers_KeepAccessToEveryWorkerAndEntryJob()
     {
+        // A Professional just promoted, at level 4: everything below their own rank stays open.
         var professional = Worker(TotalXpForLevel(4));
         professional.Tier = 3;
 
-        Assert.All(Catalog.All, job => Assert.True(JobEligibility.IsEligible(professional, job), job.Id));
+        Assert.All(Catalog.All.Where(j => j.MinTier <= 2),
+            job => Assert.True(JobEligibility.IsEligible(professional, job), job.Id));
     }
 }
 

@@ -136,5 +136,78 @@
       "Confirm deliveries with the warehouse leads",
       "Hand the morning shift a clean board"
     ]
+  },
+  {
+    "Id": "commercial_property_inspector",
+    "Title": "Commercial Property Inspector",
+    "Description": "Walk the city's office blocks and storefronts for the Buildings Department, checking that what the landlords filed matches what was built. Your signature goes on the certificate, so only Professionals need apply.",
+    "Payout": 720,
+    "XPReward": 60,
+    "MinLevel": 4,
+    "MinTier": 3,
+    "Tasks": [
+      "Collect the day's inspection list at the Buildings Department",
+      "Check the fire exits and sprinklers",
+      "Measure the floor plans against the filed drawings",
+      "Inspect the wiring in the basement service room",
+      "Photograph every violation",
+      "File the signed inspection report"
+    ]
+  },
+  {
+    "Id": "hospital_supply_coordinator",
+    "Title": "Hospital Supply Coordinator",
+    "Description": "Keep Harbor General stocked through the night, from saline and gauze to the blood bank. The charge nurses trust a Professional who knows the supply chain better than the doctors do.",
+    "Payout": 860,
+    "XPReward": 75,
+    "MinLevel": 5,
+    "MinTier": 3,
+    "Tasks": [
+      "Take the shortage list from the night charge nurse",
+      "Count the stock in the central supply room",
+      "Restock the emergency department carts",
+      "Rotate the near-expiry medicines out of the pharmacy",
+      "Chase the late delivery from the medical wholesaler",
+      "Log the blood bank temperatures",
+      "Brief the morning coordinator on the open orders"
+    ]
+  },
+  {
+    "Id": "port_customs_broker",
+    "Title": "Port Customs Broker",
+    "Description": "Clear incoming cargo through customs at the container port, matching manifests, tariffs and permits before the ships can unload. Dull paperwork, but importers pay a broker well for getting it right.",
+    "Payout": 1050,
+    "XPReward": 50,
+    "MinLevel": 5,
+    "MinTier": 3,
+    "Tasks": [
+      "Collect the overnight shipping manifests",
+      "Classify each cargo line for its tariff",
+      "Check the import permits against the manifests",
+      "Calculate the duties owed",
+      "File the customs declarations",
+      "Meet the inspector at the container yard",
+      "Release the cleared containers to the trucks",
+      "Invoice the importers for the brokerage fee"
+    ]
+  },
+  {
+    "Id": "city_contracts_manager",
+    "Title": "City Contracts Manager",
+    "Description": "Run the bidding on the city's public works, from road resurfacing to the new transit depot. The best contract a Professional can hold, and the desk where the city's Executives are chosen.",
+    "Payout": 1300,
+    "XPReward": 80,
+    "MinLevel": 6,
+    "MinTier": 3,
+    "Tasks": [
+      "Review the open tenders with the procurement office",
+      "Score the sealed bids against the requirements",
+      "Check each bidder's licenses and insurance",
+      "Negotiate the final terms with the shortlisted firms",
+      "Draft the contract awards for the council",
+      "Present the awards to the council committee",
+      "Answer the losing bidders' objections",
+      "Sign off the awarded contracts"
+    ]
   }
 ]
