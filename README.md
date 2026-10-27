@@ -94,10 +94,15 @@ not only by the UI.
 | Fleet Maintenance Crew | Tier 2, Level 3 | 6 | $340 | 50 | $57 | 8.3 | Most XP per contract below level 4 |
 | Municipal Records Contract | Tier 2, Level 3 | 6 | $420 | 35 | $70 | 5.8 | Best pay at level 3, lightest XP |
 | Logistics Dispatch Coordinator | Tier 2, Level 4 | 7 | $575 | 55 | $82 | 7.9 | Top Worker contract, best pay and XP |
+| Commercial Property Inspector | Tier 3, Level 4 | 6 | $720 | 60 | $120 | 10 | First raise after promotion |
+| Hospital Supply Coordinator | Tier 3, Level 5 | 7 | $860 | 75 | $123 | 10.7 | Most XP per task |
+| Port Customs Broker | Tier 3, Level 5 | 8 | $1,050 | 50 | $131 | 6.3 | Best pay at level 5, lightest XP |
+| City Contracts Manager | Tier 3, Level 6 | 8 | $1,300 | 80 | $162 | 10 | Top Professional contract, best pay and XP |
 
 Pay and XP are paid in full only when the whole contract is finished. The job board shows the average
-per task (derived from each job's terms, not stored) so jobs of different lengths compare fairly; no
-Worker contract leads on both averages, and Dispatch, the top contract, leads on pay. Open jobs are
+per task (derived from each job's terms, not stored) so jobs of different lengths compare fairly. Within
+each rank no contract leads on both averages, and the rank's top contract (Dispatch for Workers, the City
+Contracts Manager for Professionals) leads on pay. Open jobs are
 grouped by rank with the character's best rank first and the best-paid work first within it; locked
 jobs follow, nearest unlock first, with what each one still needs.
 
@@ -146,7 +151,29 @@ Worker contracts needed after promotion, played through the game rules:
 The design target is roughly 12–20 contracts for a reasonable strategy. A cash-focused Worker climbs
 the ladder: Freight until level 3, Records until level 4, then Dispatch.
 
-These numbers are checked by `CareerBalanceTests` and `Tier3BalanceTests`. The fewest-jobs search
+### Tier 3 (Professional) → Tier 4 (Executive)
+
+Tier 4 needs 800 lifetime XP and $20,000 on hand ($15,000 plus the $5,000 fee). Again **cash is the
+limit**: a new Professional has $5,050–$5,545 and needs about $15,000 more. XP decides which
+contracts are open (level 5 opens Hospital Supply and Port Customs, level 6 the Contracts Manager).
+
+Professional contracts needed after promotion, played through the game rules. Each column is a
+Professional made by one of the Tier 1 routes above followed by a Tier 2 strategy from the table above:
+
+| Strategy | Natural, then cash-focused ($5,255, 885 XP, level 4) | Natural, then rotating ($5,050, 1,135 XP, level 5) | Fastest, then cash-focused ($5,545, 790 XP, level 4) | Fastest, then rotating ($5,430, 1,030 XP, level 5) |
+| --- | --- | --- | --- | --- |
+| Fewest possible | 15 | 13 | 15 | 14 |
+| Cash-focused | 15 | 14 | 15 | 14 |
+| XP-focused | 15 | 14 | 16 | 14 |
+| Rotating through every Professional contract | 17 | 16 | 17 | 16 |
+| Dispatch only (before Phase 5) | 26 | 26 | 26 | 26 |
+
+The design target is again roughly 12–20 contracts. A cash-focused Professional climbs the ladder:
+Inspector until level 5, Customs until level 6, then the Contracts Manager. A character played from
+creation along the natural route and then rotating through each rank's contracts becomes an Executive
+after 45 jobs (11 + 18 + 16).
+
+These numbers are checked by `CareerBalanceTests`, `Tier3BalanceTests` and `Tier4BalanceTests`. The fewest-jobs search
 covers every job sequence but keeps only the states not beaten on both cash and XP, so it stays fast
 as jobs are added. Changing a job or a tier that moves a number means updating the test and this
 README together.
@@ -159,10 +186,10 @@ Deliberately kept for now:
   its URL. It listens on localhost; do not host it publicly.
 - **Civilian path only.** `CareerPath` is always `Civilian`; Criminal and Emergency Services careers
   are not started.
-- **No content for Tier 3 and above.** Professionals, Executives and Business Tycoons can promote but
-  have no jobs of their own yet; they keep access to every civilian job.
+- **No content for Tier 4 and above.** Executives and Business Tycoons can promote but have no jobs of
+  their own yet; they keep access to every civilian job.
 - **The WPF app ignores job requirements.** It lists and accepts every job, including the level- and
-  tier-gated ones, and does not run the web game's job data checks. It still loads all nine jobs.
+  tier-gated ones, and does not run the web game's job data checks. It still loads all thirteen jobs.
 - **Jobs are instant.** No timers, energy, failure chance, items or other currencies.
 - A job is worked one task per click; the per-task figures are a comparison aid, not a time cost.
 
@@ -172,14 +199,16 @@ Deliberately kept for now:
 
 - **Rules:** progression and levelling, promotion and fees (`ProgressionTests`, `PromotionProgressTests`),
   job acceptance and task order (`CareerServiceTests`), eligibility and unlock thresholds
-  (`JobEligibilityTests`, `MidgameJobTests`), and every job played start to finish (`CivilianLoopTests`).
+  (`JobEligibilityTests`, `MidgameJobTests`, `ProfessionalJobTests`), and every job played start to finish
+  (`CivilianLoopTests`).
 - **Job data:** the shipped catalog, the original five jobs' terms, and rejection of duplicate,
   missing and malformed ids and malformed files (`JobCatalogDataTests`).
-- **Balance:** the Tier 2 and Tier 3 numbers above (`CareerBalanceTests`, `Tier3BalanceTests`).
+- **Balance:** the Tier 2, Tier 3 and Tier 4 numbers above (`CareerBalanceTests`, `Tier3BalanceTests`,
+  `Tier4BalanceTests`).
 - **Persistence and sessions:** saving and loading, version 1–3 saves, corrupt saves left untouched,
   restarts, concurrent and stale sessions, removed or out-of-range active jobs, character creation
   (`JsonFilePlayerRepositoryTests`, `GameServiceTests`, `GameActionTests`, `CharacterCreationTests`,
   `CivilianLoopTests`).
-- **WPF compatibility:** the WPF loading path reads the same nine jobs (`CivilianLoopTests`).
+- **WPF compatibility:** the WPF loading path reads the same thirteen jobs (`CivilianLoopTests`).
 
 The Blazor pages have no automated UI tests; check them in a browser after UI changes.
