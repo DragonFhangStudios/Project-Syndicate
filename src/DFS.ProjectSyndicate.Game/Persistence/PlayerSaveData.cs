@@ -109,6 +109,8 @@ namespace DFS.ProjectSyndicate.Persistence
 			if (CharacterId != expectedCharacterId) return "character id does not match the file name";
 			if (string.IsNullOrWhiteSpace(Name)) return "missing name";
 			if (!Enum.IsDefined(CareerPath)) return "unknown career path";
+			// Reported, not loaded, so no character can be played in a career that has no content yet.
+			if (!Careers.CareerInfo.IsPlayable(CareerPath)) return $"the {Careers.CareerInfo.DisplayName(CareerPath)} career isn't playable yet";
 			if (Level < 1 || XP < 0 || TotalXP < XP || Tier < 1) return "level, XP or tier out of range";
 			if (!float.IsFinite(Cash)) return "cash is not a number";
 			if (CurrentTaskIndex < 0 || TotalEarned < 0 || JobsCompleted < 0) return "job progress out of range";

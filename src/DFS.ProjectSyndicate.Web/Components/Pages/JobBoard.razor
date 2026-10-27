@@ -59,7 +59,9 @@
         }
 
         @{
+            // Only work this character's career can take: shared jobs and its own (all thirteen for a Civilian).
             var listed = Jobs.All
+                .Where(job => JobEligibility.IsListedFor(player, job))
                 .Select(job => (Job: job, Requirements: JobEligibility.Requirements(player, job)))
                 .ToList();
             // Open work by rank, the character's best rank first, and the best-paid work first within it,
