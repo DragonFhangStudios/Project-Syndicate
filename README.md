@@ -55,7 +55,7 @@ Schema versions:
 | --- | --- |
 | 1 | Initial format. |
 | 2 | Adds `TotalXP` (lifetime XP, never reduced, used for career tiers) and `JobsCompleted`. Version 1 saves load with `TotalXP` rebuilt from `Level` and `XP`. |
-| 3 | Adds `CareerPath` (always `Civilian` for now) and `CreatedAtUtc` (player-created characters). Version 1 and 2 saves load as Civilian with no creation time. |
+| 3 | Adds `CareerPath` (stored by name; only `Civilian` loads for now, see Careers) and `CreatedAtUtc` (player-created characters). Version 1 and 2 saves load as Civilian with no creation time. |
 
 Older saves are upgraded in memory when loaded and rewritten in the current version only when that
 character next saves; listing characters never rewrites a save.
@@ -76,28 +76,56 @@ character next saves; listing characters never rewrites a save.
   never takes a player further from promotion.
 - Promotion requires the tier's lifetime XP and cash on hand (requirement plus fee); the fee is deducted.
 
+## Careers
+
+Every character has one primary career, the path whose ranks they climb. There are three:
+**Civilian**, **Criminal** and **Emergency Services** (Emergency Services will later hold police, fire
+and EMS; Criminal will hold gangs and organized crime). Only **Civilian is playable**: characters are
+created as Civilians, and a save naming another career is reported as unreadable and left untouched,
+like any other damaged save. The other two exist so jobs and rules can name them.
+
+Every job has an **owning career** and an **access policy**:
+
+- **Restricted** (the default): only characters of the owning career may take it.
+- **Shared**: characters of any career may take it, subject to its level requirement.
+
+Tiers are ranks within one career, so a tier requirement only counts for the job's own career: a Criminal
+at tier 3 is not a Civilian Professional. For that reason a shared job can't require a tier, and only
+Civilian jobs can require one until the other careers have ranks. Promotion is Civilian-only for now.
+
+The game rules enforce all of this when a job is accepted, not only the UI. A character whose career the
+game doesn't recognize can take nothing, and a job in progress that the character's career may not take
+never pays and doesn't block new work. A job board lists shared work plus the character's own career's
+work; a Civilian sees all thirteen jobs.
+
+In `SimpleJobs.json` a job may set `"Career"` (`"Civilian"`, `"Criminal"` or `"EmergencyServices"`) and
+`"Access"` (`"Restricted"` or `"Shared"`), spelled exactly. Leaving either out means Civilian and
+Restricted, which is how all existing jobs are owned. The fields are plain text in `DFS.JobSystem`, which
+doesn't reference the game; the game reads and validates them.
+
 ## Civilian jobs
 
 Defined in `src/DFS.JobSystem/Data/SimpleJobs.json` (`MinLevel` / `MinTier` gate a job; 0 or 1 means
-open to everyone). Requirements are only level and tier, which every character raises by working, so
-no job is permanently out of reach. Eligibility is checked by the game rules when a job is accepted,
-not only by the UI.
+open to everyone). Requirements are career access, level and tier; within a character's own career,
+level and tier rise by working, so no job open to that career is permanently out of reach. Eligibility
+is checked by the game rules when a job is accepted, not only by the UI. The four entry-level jobs are
+shared with every career; the other nine are Civilian only.
 
-| Job | Unlocks at | Tasks | Pay | XP | Avg pay per task | Avg XP per task | Role |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Street Trash Cleanup | — | 4 | $5 | 40 | $1 | 10 | Fastest XP, almost no pay |
-| Grocery Delivery Run | — | 3 | $50 | 20 | $17 | 6.7 | Short and balanced |
-| Diner Night Shift | — | 5 | $100 | 15 | $20 | 3 | Best early pay, slow XP |
-| Warehouse Inventory | Level 2 | 5 | $130 | 30 | $26 | 6 | Better on both once levelled |
-| Night Security Patrol | Tier 2 (Worker) | 6 | $220 | 45 | $37 | 7.5 | Open the moment you're promoted |
-| Night Freight Sorting | Tier 2, Level 2 | 5 | $260 | 40 | $52 | 8 | First raise after promotion |
-| Fleet Maintenance Crew | Tier 2, Level 3 | 6 | $340 | 50 | $57 | 8.3 | Most XP per contract below level 4 |
-| Municipal Records Contract | Tier 2, Level 3 | 6 | $420 | 35 | $70 | 5.8 | Best pay at level 3, lightest XP |
-| Logistics Dispatch Coordinator | Tier 2, Level 4 | 7 | $575 | 55 | $82 | 7.9 | Top Worker contract, best pay and XP |
-| Commercial Property Inspector | Tier 3, Level 4 | 6 | $720 | 60 | $120 | 10 | First raise after promotion |
-| Hospital Supply Coordinator | Tier 3, Level 5 | 7 | $860 | 75 | $123 | 10.7 | Most XP per task |
-| Port Customs Broker | Tier 3, Level 5 | 8 | $1,050 | 50 | $131 | 6.3 | Best pay at level 5, lightest XP |
-| City Contracts Manager | Tier 3, Level 6 | 8 | $1,300 | 80 | $162 | 10 | Top Professional contract, best pay and XP |
+| Job | Access | Unlocks at | Tasks | Pay | XP | Avg pay per task | Avg XP per task | Role |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Street Trash Cleanup | Shared | — | 4 | $5 | 40 | $1 | 10 | Fastest XP, almost no pay |
+| Grocery Delivery Run | Shared | — | 3 | $50 | 20 | $17 | 6.7 | Short and balanced |
+| Diner Night Shift | Shared | — | 5 | $100 | 15 | $20 | 3 | Best early pay, slow XP |
+| Warehouse Inventory | Shared | Level 2 | 5 | $130 | 30 | $26 | 6 | Better on both once levelled |
+| Night Security Patrol | Civilian only | Tier 2 (Worker) | 6 | $220 | 45 | $37 | 7.5 | Open the moment you're promoted |
+| Night Freight Sorting | Civilian only | Tier 2, Level 2 | 5 | $260 | 40 | $52 | 8 | First raise after promotion |
+| Fleet Maintenance Crew | Civilian only | Tier 2, Level 3 | 6 | $340 | 50 | $57 | 8.3 | Most XP per contract below level 4 |
+| Municipal Records Contract | Civilian only | Tier 2, Level 3 | 6 | $420 | 35 | $70 | 5.8 | Best pay at level 3, lightest XP |
+| Logistics Dispatch Coordinator | Civilian only | Tier 2, Level 4 | 7 | $575 | 55 | $82 | 7.9 | Top Worker contract, best pay and XP |
+| Commercial Property Inspector | Civilian only | Tier 3, Level 4 | 6 | $720 | 60 | $120 | 10 | First raise after promotion |
+| Hospital Supply Coordinator | Civilian only | Tier 3, Level 5 | 7 | $860 | 75 | $123 | 10.7 | Most XP per task |
+| Port Customs Broker | Civilian only | Tier 3, Level 5 | 8 | $1,050 | 50 | $131 | 6.3 | Best pay at level 5, lightest XP |
+| City Contracts Manager | Civilian only | Tier 3, Level 6 | 8 | $1,300 | 80 | $162 | 10 | Top Professional contract, best pay and XP |
 
 Pay and XP are paid in full only when the whole contract is finished. The job board shows the average
 per task (derived from each job's terms, not stored) so jobs of different lengths compare fairly. Within
@@ -114,6 +142,8 @@ silently dropping a job.
   accented letters, line breaks and leading, trailing or doubled underscores are rejected.
 - Every job also needs a title, at least one named task, pay and XP of zero or more, and level and
   tier requirements of zero or more, with the tier no higher than the top tier.
+- **Career fields**, when present, must name a known career and access policy exactly; a shared job, or
+  a job owned by a career without ranks, can't require a tier.
 - **A problem with one entry** (an empty entry, a duplicate, missing or malformed id, a missing title or
   tasks) is reported with its entry number in the file, counting from 1, and its id when it has one.
 - **A file that can't be read as a list of jobs** (invalid JSON, a single object instead of a list,
@@ -184,8 +214,8 @@ Deliberately kept for now:
 
 - **Local demo only.** There is no sign-in: anyone who can reach the app can play any character by
   its URL. It listens on localhost; do not host it publicly.
-- **Civilian path only.** `CareerPath` is always `Civilian`; Criminal and Emergency Services careers
-  are not started.
+- **Civilian path only.** Criminal and Emergency Services exist as career identities, and shared jobs are
+  ready for them, but they have no content, ranks or character creation yet.
 - **No content for Tier 4 and above.** Executives and Business Tycoons can promote but have no jobs of
   their own yet; they keep access to every civilian job.
 - **The WPF app ignores job requirements.** It lists and accepts every job, including the level- and
@@ -209,6 +239,10 @@ Deliberately kept for now:
   restarts, concurrent and stale sessions, removed or out-of-range active jobs, character creation
   (`JsonFilePlayerRepositoryTests`, `GameServiceTests`, `GameActionTests`, `CharacterCreationTests`,
   `CivilianLoopTests`).
-- **WPF compatibility:** the WPF loading path reads the same thirteen jobs (`CivilianLoopTests`).
+- **Careers:** a Civilian's access to every job at every tier and level is unchanged from before careers
+  (`CivilianAccessCharacterizationTests`); shared and Civilian-only access, non-interchangeable tiers,
+  unknown careers, stale assignments, career data validation and career saves (`CareerAccessTests`).
+- **WPF compatibility:** the WPF loading path reads the same thirteen jobs, career fields included, and
+  the WPF save's numeric career values are fixed (`CivilianLoopTests`, `CareerAccessTests`).
 
 The Blazor pages have no automated UI tests; check them in a browser after UI changes.

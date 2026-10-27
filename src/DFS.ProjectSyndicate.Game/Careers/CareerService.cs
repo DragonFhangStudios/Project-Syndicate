@@ -24,13 +24,14 @@ namespace DFS.ProjectSyndicate.Careers
 		}
 
 		// The character's job in progress, or null. An assignment that can't be worked (the job is no longer in
-		// the catalog, or the saved progress is outside its task list, e.g. after the job data changed) is
-		// treated as no job: it never pays, and it never blocks taking new work.
+		// the catalog, the saved progress is outside its task list, e.g. after the job data changed, or the job
+		// isn't open to the character's career) is treated as no job: it never pays, and it never blocks taking
+		// new work.
 		public Job? ActiveJob(SyndicatePlayer player)
 		{
 			var job = _jobs.Find(player.JobData.AssignedJobId);
 			int index = player.JobData.CurrentTaskIndex;
-			return job is not null && index >= 0 && index < job.Tasks.Count ? job : null;
+			return job is not null && index >= 0 && index < job.Tasks.Count && CareerMayWork(player, job) ? job : null;
 		}
 
 		public CareerResult AcceptJob(SyndicatePlayer player, string jobId)
@@ -55,7 +56,7 @@ namespace DFS.ProjectSyndicate.Careers
 		public CareerResult CompleteCurrentTask(SyndicatePlayer player)
 		{
 			var job = _jobs.Find(player.JobData.AssignedJobId);
-			if (job is null)
+			if (job is null || !CareerMayWork(player, job))
 				return CareerResult.Fail("You don't have an active job.");
 
 			int index = player.JobData.CurrentTaskIndex;
@@ -84,10 +85,20 @@ namespace DFS.ProjectSyndicate.Careers
 
 		public CareerResult Promote(SyndicatePlayer player)
 		{
+			// The tier table is Civilian's; other careers get their own ranks in a later phase. Until then their
+			// numeric tier never moves, so it can't be mistaken for a Civilian rank.
+			if (player.CareerPath != CareerPath.Civilian)
+				return CareerResult.Fail($"Promotion isn't available for the {CareerInfo.DisplayName(player.CareerPath)} career yet.");
+
 			if (!ProgressionManager.TryPromote(player))
 				return CareerResult.Fail("You don't meet the requirements for promotion yet.");
 
 			return CareerResult.Ok($"Promoted to Tier {player.Tier}: {ProgressionManager.GetTierName(player.Tier)}.");
 		}
+
+		// Career access only: level and tier are checked when a job is accepted, and losing them later doesn't
+		// cancel work in progress (as before).
+		private static bool CareerMayWork(SyndicatePlayer player, Job job) =>
+			JobAccess.Read(job, out _)?.Admits(player.CareerPath) == true;
 	}
 }

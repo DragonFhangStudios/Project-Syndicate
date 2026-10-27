@@ -51,7 +51,7 @@ namespace DFS.ProjectSyndicate.Jobs
 			if (job.Tasks is null || job.Tasks.Count == 0 || job.Tasks.Any(string.IsNullOrWhiteSpace)) return "needs at least one named task";
 			if (job.Payout < 0 || job.XPReward < 0) return "payout and XP cannot be negative";
 			if (job.MinLevel < 0 || job.MinTier < 0 || job.MinTier > Managers.ProgressionManager.MaxTier) return "requirements out of range";
-			return null;
+			return Careers.JobAccess.Validate(job);
 		}
 
 		// Checks every definition and that no two share an id. Returns null when the whole list is usable.

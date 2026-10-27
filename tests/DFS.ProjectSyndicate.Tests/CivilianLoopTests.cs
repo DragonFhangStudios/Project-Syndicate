@@ -307,6 +307,6 @@ public class CivilianLoopTests : IDisposable
         Assert.Equal(Catalog.All.Select(Terms), wpf.Select(Terms));
     }
 
-    private static (string, string, int, int, int, int, string) Terms(Job job) =>
-        (job.Id, job.Title, job.Payout, job.XPReward, job.MinLevel, job.MinTier, string.Join("|", job.Tasks));
+    private static (string, string, int, int, int, int, string, string?, string?) Terms(Job job) =>
+        (job.Id, job.Title, job.Payout, job.XPReward, job.MinLevel, job.MinTier, string.Join("|", job.Tasks), job.Career, job.Access);
 }
