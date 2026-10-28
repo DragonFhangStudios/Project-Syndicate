@@ -181,14 +181,16 @@ public class CivilianProgressionCharacterizationTests
     }
 
     // ---- The dashboard's promotion summary ----
+    // Pinned on PromotionProgress in 6B-1; PromotionStatus replaced it in 6B with the same figures.
 
     [Theory]
     [MemberData(nameof(PromotionRows))]
     public void PromotionSummary_ShowsWhatIsStillNeeded(int tier, string name, int xp, int cash, int fee)
     {
-        var progress = PromotionProgress.For(Civilian(tier - 1, xp - 40, cash + fee - 300))!;
+        var progress = PromotionStatus.For(Civilian(tier - 1, xp - 40, cash + fee - 300));
 
-        Assert.Equal((tier, name), (progress.Next.TierLevel, progress.Next.TierName));
+        Assert.Equal(PromotionAvailability.RequirementsNotMet, progress.Availability);
+        Assert.Equal((tier, name), (progress.Next!.TierLevel, progress.Next.TierName));
         Assert.Equal((40, 300f, (float)(cash + fee)), (progress.XpRemaining, progress.CashRemaining, progress.CashOnHandNeeded));
         Assert.Equal((false, false, false), (progress.XpMet, progress.CashMet, progress.CanPromote));
         Assert.Equal(cash - 300f, progress.CashAfterPromotion);
@@ -198,9 +200,10 @@ public class CivilianProgressionCharacterizationTests
     [MemberData(nameof(PromotionRows))]
     public void PromotionSummary_WhenQualified_ShowsTheCashLeftAfterTheFee(int tier, string name, int xp, int cash, int fee)
     {
-        var progress = PromotionProgress.For(Civilian(tier - 1, xp + 25, cash + fee + 70))!;
+        var progress = PromotionStatus.For(Civilian(tier - 1, xp + 25, cash + fee + 70));
 
-        Assert.Equal((tier, name), (progress.Next.TierLevel, progress.Next.TierName));
+        Assert.Equal(PromotionAvailability.Ready, progress.Availability);
+        Assert.Equal((tier, name), (progress.Next!.TierLevel, progress.Next.TierName));
         Assert.Equal((0, 0f), (progress.XpRemaining, progress.CashRemaining));
         Assert.Equal((true, true, true), (progress.XpMet, progress.CashMet, progress.CanPromote));
         Assert.Equal(cash + 70f, progress.CashAfterPromotion);
@@ -209,7 +212,10 @@ public class CivilianProgressionCharacterizationTests
     [Fact]
     public void PromotionSummary_AtTheTopTier_IsEmpty()
     {
-        Assert.Null(PromotionProgress.For(Civilian(5, 5000, 100000)));
+        var status = PromotionStatus.For(Civilian(5, 5000, 100000));
+
+        Assert.Equal(PromotionAvailability.MaxRankReached, status.Availability);
+        Assert.Null(status.Next);
     }
 
     // ---- Saves at every legitimate tier ----

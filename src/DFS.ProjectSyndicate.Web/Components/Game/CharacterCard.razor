@@ -7,7 +7,7 @@
             <div class="cc-badges">
                 @if (Player is not null)
                 {
-                    <TierBadge Tier="@Player.Tier" />
+                    <TierBadge Career="@Player.CareerPath" Tier="@Player.Tier" />
                 }
                 @if (Character.IsDemo)
                 {

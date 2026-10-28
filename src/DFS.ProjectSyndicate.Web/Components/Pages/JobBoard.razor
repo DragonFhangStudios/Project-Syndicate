@@ -13,7 +13,7 @@
     <div class="page">
         <header class="page-header">
             <div class="page-header-text">
-                <p class="eyebrow eyebrow-crimson">Civilian career</p>
+                <p class="eyebrow eyebrow-crimson">@CareerInfo.DisplayName(player.CareerPath) career</p>
                 <h1>Job board</h1>
                 <p class="lede">Honest work, honest pay. Take a contract, see every task through, and collect your earnings.</p>
                 <p class="muted">Pay and XP are paid in full when you finish the whole contract. Per-task figures are averages for comparing jobs.</p>
@@ -93,7 +93,7 @@
                     @if (grouped)
                     {
                         <h3 id="@groupId" class="job-group-title">
-                            @(group.Tier <= 1 ? "Open to everyone" : $"{ProgressionManager.GetTierName(group.Tier)} contracts")
+                            @(group.Tier <= 1 ? "Open to everyone" : $"{ProgressionManager.GetTierName(player.CareerPath, group.Tier) ?? $"Tier {group.Tier}"} contracts")
                             <span class="muted">@(group.Tier <= 1 ? "No rank needed" : $"Tier {group.Tier} and up")</span>
                         </h3>
                     }

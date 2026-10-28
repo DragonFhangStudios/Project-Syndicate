@@ -7,7 +7,10 @@
 <PlayerGate CharacterId="@CharacterId" Context="player">
     @{
         var activeJob = Careers.ActiveJob(player);
-        var promotion = PromotionProgress.For(player);
+        // Ranks and promotion come from the character's own career.
+        var promotion = PromotionStatus.For(player);
+        var rankName = ProgressionManager.GetTierName(player.CareerPath, player.Tier);
+        var maxTier = ProgressionManager.MaxTierFor(player.CareerPath);
     }
     <div class="page">
         <header class="page-header">
@@ -17,7 +20,7 @@
                     <p class="eyebrow eyebrow-crimson">Dashboard</p>
                     <h1>@player.Name</h1>
                     <div class="row">
-                        <TierBadge Tier="@player.Tier" />
+                        <TierBadge Career="@player.CareerPath" Tier="@player.Tier" />
                         <span class="muted">Level @player.Level</span>
                     </div>
                 </div>
@@ -43,8 +46,8 @@
             <StatTile Label="Cash" Value="@Format.Money(player.Cash)" IconName="coin" />
             <StatTile Label="Level" Value="@player.Level.ToString()" IconName="trend"
                       Hint="@($"{Format.Number(player.XPToNextLevel - player.XP)} XP to level {player.Level + 1}")" />
-            <StatTile Label="Rank" Value="@ProgressionManager.GetTierName(player.Tier)" IconName="star" Tone="gold"
-                      Hint="@($"Tier {player.Tier} of {ProgressionManager.MaxTier}")" />
+            <StatTile Label="Rank" Value="@(rankName ?? $"Tier {player.Tier}")" IconName="star" Tone="gold"
+                      Hint="@(maxTier is null ? $"Tier {player.Tier}" : $"Tier {player.Tier} of {maxTier}")" />
             <StatTile Label="Jobs completed" Value="@Format.Number(player.JobData.JobsCompleted)" IconName="briefcase"
                       Hint="@($"{Format.Money(player.JobData.TotalEarned)} earned")" />
         </div>
@@ -83,9 +86,8 @@
             </Panel>
 
             <Panel Eyebrow="Career" Title="Advancement" Variant="gold">
-                @if (promotion is not null)
+                @if (promotion.Next is { } next)
                 {
-                    var next = promotion.Next;
                     <p>Next rank: <strong class="text-gold">Tier @next.TierLevel · @next.TierName</strong></p>
                     @if (promotion.CanPromote)
                     {
@@ -122,10 +124,15 @@
                             : "Not yet: " + string.Join(" and ", MissingForPromotion(promotion)) + ".")
                     </p>
                 }
+                else if (promotion.Availability == PromotionAvailability.MaxRankReached)
+                {
+                    <p class="promo-ready promo-top"><Icon Name="star" /> @rankName</p>
+                    <p>You've reached the top @CareerInfo.DisplayName(player.CareerPath).ToLowerInvariant() rank. There are no further promotions.</p>
+                }
                 else
                 {
-                    <p class="promo-ready promo-top"><Icon Name="star" /> @ProgressionManager.GetTierName(player.Tier)</p>
-                    <p>You've reached the top civilian rank. There are no further promotions.</p>
+                    @* A career without ranks, an unknown career or an impossible tier: say so, and offer no promotion. *@
+                    <p class="muted">@promotion.Problem</p>
                 }
             </Panel>
         </div>
@@ -137,7 +144,7 @@
 
     private string? _promotionMessage;
 
-    private static IEnumerable<string> MissingForPromotion(PromotionProgress promotion)
+    private static IEnumerable<string> MissingForPromotion(PromotionStatus promotion)
     {
         if (!promotion.XpMet) yield return $"{Format.Number(promotion.XpRemaining)} more lifetime XP";
         if (!promotion.CashMet) yield return $"{Format.Money(promotion.CashRemaining)} more cash";
