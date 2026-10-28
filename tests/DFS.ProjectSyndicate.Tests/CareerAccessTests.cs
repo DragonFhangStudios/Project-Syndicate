@@ -189,7 +189,10 @@ public class CareerAccessTests
     public void OtherCareers_CannotPromoteThroughCivilianRanks(CareerPath career)
     {
         var player = Character(career, tier: 1, level: 10, cash: 100000);
-        Assert.True(ProgressionManager.CanPromote(player)); // the Civilian table alone would allow it
+        // Phase 6B: promotion is judged against the player's own career, which has no ranks yet. (Until 6B this
+        // returned true, because the Civilian table was the only one and CareerService alone refused it.)
+        Assert.False(ProgressionManager.CanPromote(player));
+        Assert.Equal(PromotionAvailability.CareerNotConfigured, PromotionStatus.For(player).Availability);
 
         var result = _careers.Promote(player);
 

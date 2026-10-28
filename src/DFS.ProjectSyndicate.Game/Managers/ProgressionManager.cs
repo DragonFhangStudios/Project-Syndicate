@@ -1,54 +1,39 @@
-﻿using DFS.ProjectSyndicate.Models;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Security.Policy;
+﻿using DFS.ProjectSyndicate.Careers;
+using DFS.ProjectSyndicate.Models;
 
 namespace DFS.ProjectSyndicate.Managers
 {
+	// Promotion rules, in the form the web game and the legacy WPF app call them. Every method that takes a player
+	// judges them against their own career's ranks (CareerProgressions, through PromotionStatus); this class holds
+	// no tables of its own. The tier-only members are Civilian aliases, kept so existing callers, including the
+	// WPF app, keep their exact output.
 	public static class ProgressionManager
 	{
-		// Define civilian tier progression requirements
-		private static readonly Dictionary<int, TierRequirement> TierRequirements = new()
-		{
-			{ 1, new TierRequirement { TierLevel = 1, TierName = "New Comer", XPNeeded = 0, CashNeeded = 0, PromotionCost = 0 } },
-			{ 2, new TierRequirement { TierLevel = 2, TierName = "Worker", XPNeeded = 150, CashNeeded = 1000, PromotionCost = 500 } },
-			{ 3, new TierRequirement { TierLevel = 3, TierName = "Professional", XPNeeded = 400, CashNeeded = 5000, PromotionCost = 2000 } },
-			{ 4, new TierRequirement { TierLevel = 4, TierName = "Executive", XPNeeded = 800, CashNeeded = 15000, PromotionCost = 5000 } },
-			{ 5, new TierRequirement { TierLevel = 5, TierName = "Business Tycoon", XPNeeded = 1500, CashNeeded = 50000, PromotionCost = 10000 } }
-		};
-
+		// Civilian's top tier. For any career, use MaxTierFor.
 		public const int MaxTier = 5;
 
-		public static string GetTierName(int tier)
-		{
-			return TierRequirements.ContainsKey(tier) ? TierRequirements[tier].TierName : "Unknown";
-		}
+		// Civilian rank name for a tier, or "Unknown" outside 1-5. For any career, use GetTierName(career, tier).
+		public static string GetTierName(int tier) => GetTierName(CareerPath.Civilian, tier) ?? "Unknown";
 
-		// Requirements for the player's next tier, or null at the maximum tier.
-		public static TierRequirement? GetNextTierRequirement(SyndicatePlayer player)
-		{
-			return TierRequirements.TryGetValue(player.Tier + 1, out var req) ? req : null;
-		}
+		// A career's rank name for a tier; null when the career has no ranks or the tier is outside them.
+		public static string? GetTierName(CareerPath career, int tier) => CareerProgressions.For(career)?.Rank(tier)?.TierName;
 
-		public static bool CanPromote(SyndicatePlayer player)
-		{
-			if (player.Tier >= 5) return false; // Max tier reached
+		// A career's top tier; null when the career has no ranks.
+		public static int? MaxTierFor(CareerPath career) => CareerProgressions.For(career)?.MaxTier;
 
-			int nextTier = player.Tier + 1;
-			if (!TierRequirements.ContainsKey(nextTier)) return false;
+		// Requirements for the player's next rank in their career; null when there is none to work towards
+		// (top rank, no ranks configured, or an impossible tier).
+		public static TierRequirement? GetNextTierRequirement(SyndicatePlayer player) => PromotionStatus.For(player).Next;
 
-			var req = TierRequirements[nextTier];
-			// Lifetime XP, not level progress: level-ups reduce XP but never TotalXP.
-			return player.TotalXP >= req.XPNeeded
-				&& player.Cash >= (req.CashNeeded + req.PromotionCost);
-		}
+		public static bool CanPromote(SyndicatePlayer player) => PromotionStatus.For(player).CanPromote;
 
 		public static string GetPromotionRequirements(SyndicatePlayer player)
 		{
-			if (player.Tier >= 5) return "⭐ Maximum Tier Reached!";
+			var status = PromotionStatus.For(player);
+			if (status.Availability == PromotionAvailability.MaxRankReached) return "⭐ Maximum Tier Reached!";
 
-			int nextTier = player.Tier + 1;
-			var req = TierRequirements[nextTier];
+			var req = status.Next;
+			if (req is null) return status.Problem!;
 
 			return $"Promotion to {req.TierName} Requirements:\n" +
 				   $"• Lifetime XP: {req.XPNeeded} (You have: {player.TotalXP})\n" +
@@ -58,56 +43,12 @@ namespace DFS.ProjectSyndicate.Managers
 
 		public static bool TryPromote(SyndicatePlayer player)
 		{
-			if (!CanPromote(player)) return false;
+			var status = PromotionStatus.For(player);
+			if (!status.CanPromote) return false;
 
-			int nextTier = player.Tier + 1;
-			var req = TierRequirements[nextTier];
-
-			player.Cash -= req.PromotionCost;
-			player.Tier = nextTier;
+			player.Cash -= status.Next!.PromotionCost;
+			player.Tier = status.Next.TierLevel;
 			return true;
 		}
 	}
 }
-
-/*### **📚 WHAT THIS CODE DOES:**
-
-**TierRequirements Dictionary: **
--Stores all 5 civilian tiers with their requirements
-- Tier 1→2: Need 150 XP, $1000 total, costs $500 to promote
-- Tier 2→3: Need 400 XP, $5000 total, costs $2000
-- And so on...
-
-**GetTierName():**
--Takes a tier number (1-5)
-- Returns the name ("New Comer", "Worker", etc.)
-
-**CanPromote():**
--Checks if player has enough XP AND cash to promote
-- Returns true/false
-
-**GetPromotionRequirements():**
--Returns a formatted string showing what's needed
-- Shows current vs required for XP and cash
-
-**TryPromote():**
--Actually performs the promotion
-- Deducts the promotion cost
-- Increases the tier
-- Returns true if successful
-
----
-
-### **✅ CHECKPOINT:**
-
-Your project structure should now look like:
-```
-DFS.ProjectSyndicate /
-├── Models /
-│   ├── SyndicatePlayer.cs ✅
-│   ├── TierRequirement.cs ✅
-│   └── (other models...)
-├── Managers /              ← NEW FOLDER
-│   └── ProgressionManager.cs ✅ NEW FILE
-└── (other folders...)
-	*/

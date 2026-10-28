@@ -85,15 +85,17 @@ namespace DFS.ProjectSyndicate.Careers
 
 		public CareerResult Promote(SyndicatePlayer player)
 		{
-			// The tier table is Civilian's; other careers get their own ranks in a later phase. Until then their
-			// numeric tier never moves, so it can't be mistaken for a Civilian rank.
-			if (player.CareerPath != CareerPath.Civilian)
-				return CareerResult.Fail($"Promotion isn't available for the {CareerInfo.DisplayName(player.CareerPath)} career yet.");
+			// Judged against the player's own career's ranks. A career without ranks, an unknown career or an
+			// impossible tier is refused with its own reason; short of the requirements or at the top rank, the
+			// message is the long-standing one.
+			string? problem = PromotionStatus.For(player).Problem;
+			if (problem is not null)
+				return CareerResult.Fail(problem);
 
 			if (!ProgressionManager.TryPromote(player))
 				return CareerResult.Fail("You don't meet the requirements for promotion yet.");
 
-			return CareerResult.Ok($"Promoted to Tier {player.Tier}: {ProgressionManager.GetTierName(player.Tier)}.");
+			return CareerResult.Ok($"Promoted to Tier {player.Tier}: {ProgressionManager.GetTierName(player.CareerPath, player.Tier)}.");
 		}
 
 		// Career access only: level and tier are checked when a job is accepted, and losing them later doesn't
