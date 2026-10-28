@@ -11,10 +11,13 @@ namespace DFS.ProjectSyndicate.Careers
 		public static string InvalidTierMessage(CareerPath career, int tier) =>
 			$"Tier {tier} isn't a valid {CareerInfo.DisplayName(career)} rank.";
 
-		// A tier the character's career has. A career without ranks has none to check beyond the floor of 1;
-		// such characters can't be promoted, so their tier never moves from where it started.
+		// A tier the character's career has; an unknown career has no valid tier at all. A known career without
+		// ranks has none to check beyond the floor of 1; such characters can't be promoted, so their tier never
+		// moves from where it started.
 		public static bool HasValidTier(SyndicatePlayer player) =>
-			player.Tier >= 1 && (CareerProgressions.For(player.CareerPath)?.IsValidTier(player.Tier) ?? true);
+			Enum.IsDefined(player.CareerPath)
+			&& player.Tier >= 1
+			&& (CareerProgressions.For(player.CareerPath)?.IsValidTier(player.Tier) ?? true);
 
 		// Why the character can't act, or null when they can.
 		public static string? Problem(SyndicatePlayer player)

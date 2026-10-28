@@ -96,6 +96,32 @@ public class CareerTierEligibilityTests
         Assert.Equal("A valid Criminal rank", JobEligibility.Requirements(Character(CareerPath.Criminal, 0), Catalog.Find("trash_cleanup")!)[0].Label);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void UnknownCareer_HasNoValidTier_AndKeepsItsOwnMessage(int tier)
+    {
+        // No career means no ranks to be valid in, whatever the number; the unknown career is still the reason given.
+        var player = Character((CareerPath)7, tier);
+
+        Assert.False(CareerStanding.HasValidTier(player));
+        Assert.Equal("This character's career isn't recognized.", CareerStanding.Problem(player));
+        Assert.Equal([new JobRequirement("A recognized career", false)], JobEligibility.Requirements(player, Catalog.Find("trash_cleanup")!));
+    }
+
+    [Theory]
+    [InlineData(CareerPath.Civilian, 1)]
+    [InlineData(CareerPath.Civilian, 5)]
+    [InlineData(CareerPath.Criminal, 1)]
+    [InlineData(CareerPath.EmergencyServices, 1)]
+    public void KnownCareer_AtARealTier_HasAValidTier(CareerPath career, int tier)
+    {
+        var player = Character(career, tier);
+
+        Assert.True(CareerStanding.HasValidTier(player));
+        Assert.Null(CareerStanding.Problem(player));
+    }
+
     // ---- Invalid job definitions, from a source that skips the catalog's checks ----
 
     public static TheoryData<CareerPath, int> EveryCareerAtEveryTier()
@@ -183,6 +209,24 @@ public class CareerTierEligibilityTests
         var result = new CareerService(new FakeJobCatalog(broken)).AcceptJob(Character(CareerPath.Civilian, 1), "no_tasks");
 
         Assert.Equal((false, "That job is not available."), (result.Success, result.Message));
+    }
+
+    [Fact]
+    public void ActiveJobWithNoTaskList_IsNoJob_PaysNothing_AndDoesNotBlockNewWork()
+    {
+        var broken = ValidJob("no_tasks");
+        broken.Tasks = null!;
+        var careers = new CareerService(new FakeJobCatalog(broken, ValidJob("honest_work")));
+        var player = Character(CareerPath.Civilian, 1, cash: 500);
+        player.JobData.AssignedJobId = "no_tasks";
+
+        Assert.Null(careers.ActiveJob(player));
+        var complete = careers.CompleteCurrentTask(player);
+        Assert.Equal((false, "You don't have an active job.", (JobReward?)null), (complete.Success, complete.Message, complete.Reward));
+        Assert.Equal((500f, 0), (player.Cash, player.JobData.JobsCompleted));
+
+        Assert.True(careers.AcceptJob(player, "honest_work").Success);
+        Assert.Equal(40, FinishJob(careers, player).Cash);
     }
 
     // ---- Tier requirements belong to the job's own career ----

@@ -31,7 +31,8 @@ namespace DFS.ProjectSyndicate.Careers
 		{
 			var job = _jobs.Find(player.JobData.AssignedJobId);
 			int index = player.JobData.CurrentTaskIndex;
-			return job is not null && index >= 0 && index < job.Tasks.Count && CareerMayWork(player, job) ? job : null;
+			// CareerMayWork first: it validates the definition, so the task list is known to exist before it is read.
+			return job is not null && CareerMayWork(player, job) && index >= 0 && index < job.Tasks.Count ? job : null;
 		}
 
 		public CareerResult AcceptJob(SyndicatePlayer player, string jobId)
