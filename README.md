@@ -45,7 +45,9 @@ One JSON file per character in `src/DFS.ProjectSyndicate.Web/App_Data/saves/` (g
 served over HTTP). Change the folder with the `Syndicate:SaveDirectory` setting.
 
 - Writes go to a temporary file that then replaces the save, so an interrupted save cannot leave a partial file.
-- A save that cannot be read is reported in the UI and the server log, and is never overwritten.
+- A save that cannot be read is reported in the UI and the server log, and is never overwritten. That
+  includes a save whose tier its career doesn't have (for a Civilian, outside 1–5): no version of the game
+  has promoted past a career's top rank, so only a damaged or hand-edited save is affected.
 - Actions for the same character are serialized and always apply to the latest save, so a reward
   cannot be collected twice (for example from two browser tabs).
 
@@ -76,6 +78,33 @@ character next saves; listing characters never rewrites a save.
   never takes a player further from promotion.
 - Promotion requires the tier's lifetime XP and cash on hand (requirement plus fee); the fee is deducted.
 
+### Career ranks
+
+Ranks belong to a career. `CareerProgressions` (`DFS.ProjectSyndicate.Game/Careers`) is the one place they
+are defined, as immutable tables; only Civilian has one so far:
+
+| Tier | Civilian rank | Lifetime XP | Cash requirement | Promotion fee |
+| --- | --- | --- | --- | --- |
+| 1 | New Comer | — | — | — |
+| 2 | Worker | 150 | $1,000 | $500 |
+| 3 | Professional | 400 | $5,000 | $2,000 |
+| 4 | Executive | 800 | $15,000 | $5,000 |
+| 5 | Business Tycoon | 1,500 | $50,000 | $10,000 |
+
+A character is judged against their own career's ranks. `PromotionStatus` reports where they stand:
+**Ready**, **RequirementsNotMet**, **MaxRankReached** (the top of their own career), **CareerNotConfigured**
+(a career with no ranks yet, never mistaken for the top rank), **InvalidTier** (a tier the career doesn't
+have) or **UnknownCareer**. A rank table may be added before its career becomes playable; a playable
+career must have one.
+
+A character with an unknown career or an impossible tier can't do anything: no work (shared jobs
+included), no finishing work in progress, no rewards and no promotion. Each case gets a plain message
+such as "Tier 9 isn't a valid Civilian rank."
+
+`ProgressionManager` keeps its existing methods, so the legacy WPF app is unchanged; each method that
+takes a character uses that character's career. `GetTierName(tier)` and `MaxTier` stay as Civilian
+aliases; `GetTierName(career, tier)` and `MaxTierFor(career)` work for any career.
+
 ## Careers
 
 Every character has one primary career, the path whose ranks they climb. There are three:
@@ -91,11 +120,14 @@ Every job has an **owning career** and an **access policy**:
 
 Tiers are ranks within one career, so a tier requirement only counts for the job's own career: a Criminal
 at tier 3 is not a Civilian Professional. For that reason a shared job can't require a tier, and only
-Civilian jobs can require one until the other careers have ranks. Promotion is Civilian-only for now.
+any job can only require a tier its owning career has, which for now means Civilian ranks 2–5. Only
+Civilians can be promoted, since only Civilian has ranks.
 
 The game rules enforce all of this when a job is accepted, not only the UI. A character whose career the
-game doesn't recognize can take nothing, and a job in progress that the character's career may not take
-never pays and doesn't block new work. A job board lists shared work plus the character's own career's
+game doesn't recognize, or whose tier their career doesn't have, can take nothing, and a job in progress
+that the character can't work (its career may not take it, or the job's definition breaks these rules)
+never pays and doesn't block new work. Job definitions are checked again at that point, so data that
+skipped the catalog's checks is refused to every career, including its owner. A job board lists shared work plus the character's own career's
 work; a Civilian sees all thirteen jobs.
 
 In `SimpleJobs.json` a job may set `"Career"` (`"Civilian"`, `"Criminal"` or `"EmergencyServices"`) and
@@ -227,7 +259,7 @@ Deliberately kept for now:
 
 `tests/DFS.ProjectSyndicate.Tests` (xUnit) covers the game library:
 
-- **Rules:** progression and levelling, promotion and fees (`ProgressionTests`, `PromotionProgressTests`),
+- **Rules:** progression and levelling, promotion and fees (`ProgressionTests`, `PromotionStatusFiguresTests`),
   job acceptance and task order (`CareerServiceTests`), eligibility and unlock thresholds
   (`JobEligibilityTests`, `MidgameJobTests`, `ProfessionalJobTests`), and every job played start to finish
   (`CivilianLoopTests`).
@@ -242,6 +274,11 @@ Deliberately kept for now:
 - **Careers:** a Civilian's access to every job at every tier and level is unchanged from before careers
   (`CivilianAccessCharacterizationTests`); shared and Civilian-only access, non-interchangeable tiers,
   unknown careers, stale assignments, career data validation and career saves (`CareerAccessTests`).
+- **Career ranks:** valid Civilian progression pinned before career ranks were introduced, including the
+  WPF promotion text (`CivilianProgressionCharacterizationTests`); the rank registry, its immutability and
+  every promotion state (`CareerProgressionTests`); impossible tiers and invalid job definitions in the
+  job rules (`CareerTierEligibilityTests`); saves with a tier their career doesn't have
+  (`SaveTierValidationTests`).
 - **WPF compatibility:** the WPF loading path reads the same thirteen jobs, career fields included, and
   the WPF save's numeric career values are fixed (`CivilianLoopTests`, `CareerAccessTests`).
 
