@@ -25,7 +25,7 @@
                 <Monogram Name="@player.Name" Size="sm" />
                 <div class="who-text">
                     <p class="who-name">@player.Name</p>
-                    <TierBadge Tier="@player.Tier" />
+                    <TierBadge Career="@player.CareerPath" Tier="@player.Tier" />
                 </div>
             </div>
         }
@@ -53,7 +53,7 @@
                     </div>
                     <div class="statbar-item statbar-rank">
                         <dt>Rank</dt>
-                        <dd>@ProgressionManager.GetTierName(current.Tier)</dd>
+                        <dd>@(ProgressionManager.GetTierName(current.CareerPath, current.Tier) ?? $"Tier {current.Tier}")</dd>
                     </div>
                 </dl>
             }

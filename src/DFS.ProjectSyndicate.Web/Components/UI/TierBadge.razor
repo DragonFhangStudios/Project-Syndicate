@@ -1,9 +1,11 @@
-@* Career rank in gold, the colour reserved for prestige. *@
+@* Career rank in gold, the colour reserved for prestige. The name comes from the character's own career; a
+   tier its career has no name for shows the number alone. Kept on one line so the badge renders exactly as before. *@
 <span class="tier-badge">
     <Icon Name="star" CssClass="tier-icon" />
-    <span>Tier @Tier · @ProgressionManager.GetTierName(Tier)</span>
+    <span>@if (ProgressionManager.GetTierName(Career, Tier) is { } name) {<text>Tier @Tier · @name</text>} else {<text>Tier @Tier</text>}</span>
 </span>
 
 @code {
+    [Parameter, EditorRequired] public CareerPath Career { get; set; }
     [Parameter, EditorRequired] public int Tier { get; set; }
 }

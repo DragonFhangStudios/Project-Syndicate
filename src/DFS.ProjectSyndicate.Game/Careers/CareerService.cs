@@ -24,23 +24,28 @@ namespace DFS.ProjectSyndicate.Careers
 		}
 
 		// The character's job in progress, or null. An assignment that can't be worked (the job is no longer in
-		// the catalog, the saved progress is outside its task list, e.g. after the job data changed, or the job
-		// isn't open to the character's career) is treated as no job: it never pays, and it never blocks taking
-		// new work.
+		// the catalog, the saved progress is outside its task list, e.g. after the job data changed, the job's
+		// definition is invalid or isn't open to the character's career, or the character itself is in a state the
+		// rules can't act on) is treated as no job: it never pays, and it never blocks taking new work.
 		public Job? ActiveJob(SyndicatePlayer player)
 		{
 			var job = _jobs.Find(player.JobData.AssignedJobId);
 			int index = player.JobData.CurrentTaskIndex;
-			return job is not null && index >= 0 && index < job.Tasks.Count && CareerMayWork(player, job) ? job : null;
+			// CareerMayWork first: it validates the definition, so the task list is known to exist before it is read.
+			return job is not null && CareerMayWork(player, job) && index >= 0 && index < job.Tasks.Count ? job : null;
 		}
 
 		public CareerResult AcceptJob(SyndicatePlayer player, string jobId)
 		{
+			string? standing = CareerStanding.Problem(player);
+			if (standing is not null)
+				return CareerResult.Fail(standing);
+
 			if (ActiveJob(player) is not null)
 				return CareerResult.Fail("Finish your current job before taking another.");
 
 			var job = _jobs.Find(jobId);
-			if (job is null || job.Tasks.Count == 0)
+			if (job is null || job.Tasks is null || job.Tasks.Count == 0)
 				return CareerResult.Fail("That job is not available.");
 
 			// Enforced here, not only by the UI: a request for a locked job is refused.
@@ -55,6 +60,10 @@ namespace DFS.ProjectSyndicate.Careers
 
 		public CareerResult CompleteCurrentTask(SyndicatePlayer player)
 		{
+			string? standing = CareerStanding.Problem(player);
+			if (standing is not null)
+				return CareerResult.Fail(standing);
+
 			var job = _jobs.Find(player.JobData.AssignedJobId);
 			if (job is null || !CareerMayWork(player, job))
 				return CareerResult.Fail("You don't have an active job.");
@@ -85,20 +94,24 @@ namespace DFS.ProjectSyndicate.Careers
 
 		public CareerResult Promote(SyndicatePlayer player)
 		{
-			// The tier table is Civilian's; other careers get their own ranks in a later phase. Until then their
-			// numeric tier never moves, so it can't be mistaken for a Civilian rank.
-			if (player.CareerPath != CareerPath.Civilian)
-				return CareerResult.Fail($"Promotion isn't available for the {CareerInfo.DisplayName(player.CareerPath)} career yet.");
+			// Judged against the player's own career's ranks. A career without ranks, an unknown career or an
+			// impossible tier is refused with its own reason; short of the requirements or at the top rank, the
+			// message is the long-standing one.
+			string? problem = PromotionStatus.For(player).Problem;
+			if (problem is not null)
+				return CareerResult.Fail(problem);
 
 			if (!ProgressionManager.TryPromote(player))
 				return CareerResult.Fail("You don't meet the requirements for promotion yet.");
 
-			return CareerResult.Ok($"Promoted to Tier {player.Tier}: {ProgressionManager.GetTierName(player.Tier)}.");
+			return CareerResult.Ok($"Promoted to Tier {player.Tier}: {ProgressionManager.GetTierName(player.CareerPath, player.Tier)}.");
 		}
 
-		// Career access only: level and tier are checked when a job is accepted, and losing them later doesn't
-		// cancel work in progress (as before).
+		// The character can act, the job is a valid definition, and it is open to their career. Level and tier
+		// requirements are checked when a job is accepted; losing them later doesn't cancel work in progress.
 		private static bool CareerMayWork(SyndicatePlayer player, Job job) =>
-			JobAccess.Read(job, out _)?.Admits(player.CareerPath) == true;
+			CareerStanding.Problem(player) is null
+			&& JobCatalog.Validate(job) is null
+			&& JobAccess.Read(job, out _)!.Admits(player.CareerPath);
 	}
 }

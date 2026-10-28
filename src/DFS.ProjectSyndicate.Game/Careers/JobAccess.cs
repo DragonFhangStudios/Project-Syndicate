@@ -45,11 +45,17 @@ namespace DFS.ProjectSyndicate.Careers
 			if (access is null) return problem;
 
 			// Tiers are ranks within one career, so a tier requirement only makes sense for one career's own work,
-			// and only Civilian has ranks so far.
-			if (job.MinTier > 1 && access.Policy == JobAccessPolicy.Shared)
-				return "a shared job can't require a tier, because tiers are ranks within one career";
-			if (job.MinTier > 1 && access.Owner != CareerPath.Civilian)
-				return $"a {CareerInfo.DisplayName(access.Owner)} job can't require a tier until that career has ranks";
+			// and only for a rank that career has (CareerProgressions).
+			if (job.MinTier > 1)
+			{
+				var ranks = CareerProgressions.For(access.Owner);
+				if (ranks is not null && job.MinTier > ranks.MaxTier)
+					return "requirements out of range";
+				if (access.Policy == JobAccessPolicy.Shared)
+					return "a shared job can't require a tier, because tiers are ranks within one career";
+				if (ranks is null)
+					return $"a {CareerInfo.DisplayName(access.Owner)} job can't require a tier until that career has ranks";
+			}
 			return null;
 		}
 

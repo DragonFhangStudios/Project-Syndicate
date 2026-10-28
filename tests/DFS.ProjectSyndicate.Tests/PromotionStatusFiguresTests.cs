@@ -1,10 +1,12 @@
+using DFS.ProjectSyndicate.Careers;
 using DFS.ProjectSyndicate.Characters;
 using DFS.ProjectSyndicate.Managers;
 using DFS.ProjectSyndicate.Models;
 
 namespace DFS.ProjectSyndicate.Tests;
 
-public class PromotionProgressTests
+// The promotion figures the dashboard shows (moved from PromotionProgress to PromotionStatus in Phase 6B; same values).
+public class PromotionStatusFiguresTests
 {
     private static SyndicatePlayer Player(int tier, int totalXp, float cash)
     {
@@ -18,16 +20,17 @@ public class PromotionProgressTests
     [Fact]
     public void NewCharacter_IsShownEverythingStillNeededForWorker()
     {
-        var progress = PromotionProgress.For(Player(1, 0, 500))!;
+        var progress = PromotionStatus.For(Player(1, 0, 500));
 
-        Assert.Equal((2, 150, 1000f, 1500f), (progress.Next.TierLevel, progress.XpRemaining, progress.CashRemaining, progress.CashOnHandNeeded));
+        Assert.Equal(PromotionAvailability.RequirementsNotMet, progress.Availability);
+        Assert.Equal((2, 150, 1000f, 1500f), (progress.Next!.TierLevel, progress.XpRemaining, progress.CashRemaining, progress.CashOnHandNeeded));
         Assert.False(progress.XpMet || progress.CashMet || progress.CanPromote);
     }
 
     [Fact]
     public void XpMet_ButCashShort_ShowsOnlyTheCashGap()
     {
-        var progress = PromotionProgress.For(Player(2, 650, 6800))!;
+        var progress = PromotionStatus.For(Player(2, 650, 6800));
 
         Assert.Equal((0, 200f), (progress.XpRemaining, progress.CashRemaining));
         Assert.True(progress.XpMet);
@@ -37,7 +40,7 @@ public class PromotionProgressTests
     [Fact]
     public void CashMet_ButXpShort_ShowsOnlyTheXpGap()
     {
-        var progress = PromotionProgress.For(Player(2, 330, 9000))!;
+        var progress = PromotionStatus.For(Player(2, 330, 9000));
 
         Assert.Equal((70, 0f), (progress.XpRemaining, progress.CashRemaining));
         Assert.True(progress.CashMet);
@@ -52,8 +55,9 @@ public class PromotionProgressTests
     public void Qualified_AgreesWithTheRules_AndShowsCashAfterTheFee(int tier, int totalXp, float cash, float after)
     {
         var player = Player(tier, totalXp, cash);
-        var progress = PromotionProgress.For(player)!;
+        var progress = PromotionStatus.For(player);
 
+        Assert.Equal(PromotionAvailability.Ready, progress.Availability);
         Assert.True(progress.CanPromote);
         Assert.True(ProgressionManager.CanPromote(player));
         Assert.Equal(after, progress.CashAfterPromotion);
@@ -71,13 +75,18 @@ public class PromotionProgressTests
     {
         var player = Player(tier, totalXp, cash);
 
-        Assert.False(PromotionProgress.For(player)!.CanPromote);
+        Assert.Equal(PromotionAvailability.RequirementsNotMet, PromotionStatus.For(player).Availability);
+        Assert.False(PromotionStatus.For(player).CanPromote);
         Assert.False(ProgressionManager.CanPromote(player));
     }
 
     [Fact]
     public void MaxTier_HasNoProgress()
     {
-        Assert.Null(PromotionProgress.For(Player(ProgressionManager.MaxTier, 5000, 100000)));
+        var status = PromotionStatus.For(Player(ProgressionManager.MaxTier, 5000, 100000));
+
+        Assert.Equal(PromotionAvailability.MaxRankReached, status.Availability);
+        Assert.Null(status.Next);
+        Assert.False(status.CanPromote);
     }
 }

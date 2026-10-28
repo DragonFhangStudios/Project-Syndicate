@@ -112,6 +112,12 @@ namespace DFS.ProjectSyndicate.Persistence
 			// Reported, not loaded, so no character can be played in a career that has no content yet.
 			if (!Careers.CareerInfo.IsPlayable(CareerPath)) return $"the {Careers.CareerInfo.DisplayName(CareerPath)} career isn't playable yet";
 			if (Level < 1 || XP < 0 || TotalXP < XP || Tier < 1) return "level, XP or tier out of range";
+			// A tier is a rank in the character's own career, so it must be one that career has. No version of the
+			// game has promoted past a career's top rank, so only a damaged or hand-edited save fails this.
+			var ranks = Careers.CareerProgressions.For(CareerPath);
+			if (ranks is null) return $"the {Careers.CareerInfo.DisplayName(CareerPath)} career has no ranks configured";
+			if (Tier > ranks.MaxTier)
+				return $"tier {Tier} is outside the {Careers.CareerInfo.DisplayName(CareerPath)} career's ranks (1-{ranks.MaxTier})";
 			if (!float.IsFinite(Cash)) return "cash is not a number";
 			if (CurrentTaskIndex < 0 || TotalEarned < 0 || JobsCompleted < 0) return "job progress out of range";
 			return null;
