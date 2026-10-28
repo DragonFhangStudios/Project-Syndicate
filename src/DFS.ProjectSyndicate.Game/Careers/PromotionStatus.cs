@@ -49,9 +49,9 @@ namespace DFS.ProjectSyndicate.Careers
 		// Why promotion can't be considered at all, for the states that aren't about requirements; otherwise null.
 		public string? Problem => Availability switch
 		{
-			PromotionAvailability.UnknownCareer => "This character's career isn't recognized.",
+			PromotionAvailability.UnknownCareer => CareerStanding.UnknownCareerMessage,
 			PromotionAvailability.CareerNotConfigured => $"Promotion isn't available for the {CareerInfo.DisplayName(Career)} career yet.",
-			PromotionAvailability.InvalidTier => $"Tier {Tier} isn't a valid {CareerInfo.DisplayName(Career)} rank.",
+			PromotionAvailability.InvalidTier => CareerStanding.InvalidTierMessage(Career, Tier),
 			_ => null
 		};
 

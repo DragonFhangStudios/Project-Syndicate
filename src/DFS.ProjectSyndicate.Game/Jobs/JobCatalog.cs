@@ -50,7 +50,8 @@ namespace DFS.ProjectSyndicate.Jobs
 			if (string.IsNullOrWhiteSpace(job.Title)) return "missing title";
 			if (job.Tasks is null || job.Tasks.Count == 0 || job.Tasks.Any(string.IsNullOrWhiteSpace)) return "needs at least one named task";
 			if (job.Payout < 0 || job.XPReward < 0) return "payout and XP cannot be negative";
-			if (job.MinLevel < 0 || job.MinTier < 0 || job.MinTier > Managers.ProgressionManager.MaxTier) return "requirements out of range";
+			if (job.MinLevel < 0 || job.MinTier < 0) return "requirements out of range";
+			// Career fields, and the tier ceiling, which is the owning career's top rank.
 			return Careers.JobAccess.Validate(job);
 		}
 
